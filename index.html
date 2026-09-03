@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Couchbase Consolidation TCO Estimator — Simplified POC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== Base design system, matched to the original prototype's styles.css ===== */
+:root {
+  --cb-red: #e31b23;
+  --cb-red-dark: #a9151b;
+  --ink: #111318;
+  --muted: #5a6472;
+  --line: #e6e2dc;
+  --cream: #fff6e6;
+  --cream-2: #fbefe0;
+  --card: #ffffff;
+  --green: #147a4a;
+  --amber: #9a5b00;
+  --shadow: 0 20px 45px rgba(17, 19, 24, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(227, 27, 35, 0.08), transparent 32rem),
+    linear-gradient(180deg, var(--cream) 0, #fff 26rem);
+}
+
+button, input, select { font: inherit; }
+
+.hero { padding: 2rem clamp(1rem, 4vw, 4rem) 1rem; }
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.logo-mark {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.55rem;
+  background: var(--cb-red);
+  position: relative;
+  flex: none;
+}
+.logo-mark::after {
+  content: "";
+  position: absolute;
+  left: 0.48rem;
+  right: 0.48rem;
+  bottom: 0.62rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: white;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 22rem;
+  gap: 2rem;
+  align-items: end;
+  margin-top: 3rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.45rem;
+  color: var(--cb-red-dark);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1, h2, h3, p { margin-top: 0; }
+
+h1 {
+  max-width: 58rem;
+  margin-bottom: 1rem;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+h2 { margin-bottom: 0.8rem; font-size: 1.35rem; letter-spacing: -0.03em; }
+h3 { margin-bottom: 0.65rem; }
+
+.subhead { max-width: 48rem; color: var(--muted); font-size: 1.1rem; line-height: 1.55; }
+
+.hero-card, .panel, .summary-box, .state-panel {
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow);
+}
+
+.hero-card { padding: 1.25rem; background: var(--ink); color: white; }
+.hero-card p { color: #d8dce2; margin: 0.45rem 0 0; }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(25rem, 0.95fr);
+  gap: 1.5rem;
+  padding: 1rem clamp(1rem, 4vw, 4rem) 3rem;
+}
+
+.panel { padding: clamp(1rem, 2.2vw, 1.6rem); }
+
+.results-panel { position: sticky; top: 1rem; align-self: start; }
+
+.section-heading.spaced { margin-top: 2rem; }
+
+.tool-groups { display: grid; gap: 1rem; }
+
+.tool-group {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: #fff;
+}
+.tool-group h3 { margin-bottom: 0.75rem; font-size: 1rem; }
+
+.check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.55rem;
+}
+
+.check-card {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  background: #fffdf9;
+}
+.check-card:has(input:checked) { border-color: rgba(227, 27, 35, 0.55); background: #fff2f2; }
+.check-card input { margin-top: 0.2rem; accent-color: var(--cb-red); }
+.check-card span { font-weight: 750; }
+.check-card small { display: block; color: var(--muted); margin-top: 0.15rem; line-height: 1.35; }
+
+.input-stack { display: grid; gap: 0.9rem; }
+
+.field {
+  display: grid;
+  grid-template-columns: 1fr 9rem;
+  gap: 0.8rem;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 0.85rem;
+  background: #fff;
+}
+.field label { display: block; font-weight: 750; }
+.field p { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.88rem; line-height: 1.4; }
+.field-controls { display: grid; gap: 0.35rem; }
+
+input[type="range"] { width: 100%; accent-color: var(--cb-red); }
+input[type="number"], select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  background: #fff;
+}
+
+.advanced {
+  margin-top: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 0.95rem;
+  background: #fffdf9;
+}
+.advanced summary, .state-panel summary { cursor: pointer; font-weight: 850; }
+.advanced .input-stack { margin-top: 0.9rem; }
+
+.result-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; }
+
+.result-card { min-height: 7.5rem; border: 1px solid var(--line); border-radius: 1rem; padding: 1rem; background: #fff; }
+.result-card.primary {
+  grid-column: 1 / -1;
+  color: white;
+  background: linear-gradient(135deg, var(--cb-red), var(--cb-red-dark));
+  border: 0;
+}
+.result-card span { display: block; color: var(--muted); font-size: 0.85rem; font-weight: 750; }
+.result-card.primary span { color: rgba(255,255,255,0.78); }
+.result-card strong { display: block; margin-top: 0.75rem; font-size: clamp(1.35rem, 2.6vw, 2rem); letter-spacing: -0.04em; }
+
+.message { margin: 1rem 0; border-radius: 0.9rem; padding: 0.85rem 1rem; background: #ecfdf3; color: var(--green); font-weight: 700; }
+.message.warning { background: #fff7e5; color: var(--amber); }
+
+.summary-box, .state-panel { margin-top: 1rem; padding: 1rem; box-shadow: none; }
+.summary-box p { margin-bottom: 0; color: var(--muted); line-height: 1.5; }
+
+.benchmark-list { margin: 0; padding-left: 1.15rem; color: var(--muted); line-height: 1.45; }
+.benchmark-list li + li { margin-top: 0.45rem; }
+
+.button-row { display: flex; gap: 0.8rem; align-items: center; margin: 0.9rem 0; flex-wrap: wrap; }
+
+button { border: 0; border-radius: 0.75rem; padding: 0.72rem 0.95rem; color: white; background: var(--ink); cursor: pointer; font-weight: 800; }
+button:hover { background: var(--cb-red-dark); }
+
+pre {
+  max-height: 24rem; overflow: auto; margin: 0;
+  border: 1px solid var(--line); border-radius: 0.8rem; padding: 1rem;
+  background: #101116; color: #f4f6f8; font-size: 0.78rem; line-height: 1.45;
+}
+
+footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
+
+@media (max-width: 960px) {
+  .hero-grid, .layout { grid-template-columns: 1fr; }
+  .results-panel { position: static; }
+  footer { padding-inline: 1rem; }
+}
+@media (max-width: 640px) {
+  .field, .result-grid { grid-template-columns: 1fr; }
+  .hero { padding-top: 1.25rem; }
+  h1 { font-size: 2.4rem; }
+}
+
+.info-dot { color: var(--cb-red-dark); font-size: 0.86em; font-weight: 900; }
+.source-line { display: block; margin-top: 0.25rem; color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
+.source-line a { color: var(--muted); }
+
+/* ===== Small additions for this simplified build — namespaced to avoid clashing with the base system ===== */
+.tco-ghost-btn {
+  background: #fff; color: var(--ink); border: 1px solid var(--line);
+  padding: 0.5rem 0.85rem; border-radius: 0.65rem; font-weight: 700; font-size: 0.82rem;
+}
+.tco-ghost-btn:hover { background: var(--cream-2); color: var(--ink); }
+.tco-invert-btn { background: #fff; color: var(--ink); }
+.tco-invert-btn:hover { background: var(--cream-2); }
+.tco-badge {
+  display: inline-block; font-size: 0.72rem; font-weight: 750; color: var(--muted);
+  background: var(--cream-2); border-radius: 999px; padding: 0.15rem 0.6rem; margin-left: 0.4rem;
+  text-transform: none; letter-spacing: 0;
+}
+.tco-hidden { display: none !important; }
+.tco-lead-form input[type="text"], .tco-lead-form input[type="email"] {
+  width: 100%; border: 1px solid var(--line); border-radius: 0.65rem; padding: 0.55rem 0.65rem; background: #fff;
+}
+.tco-lead-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.tco-chip { display: inline-block; background: #fffdf9; border: 1px solid var(--line); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.82rem; margin: 0.2rem 0.3rem 0 0; }
+.tco-chip.empty { color: var(--muted); border-style: dashed; }
+.tco-breakdown-table { width: 100%; border-collapse: collapse; margin-top: 0.6rem; font-size: 0.82rem; }
+.tco-breakdown-table td { padding: 0.35rem 0; border-bottom: 1px solid var(--line); color: var(--ink); }
+.tco-breakdown-table td:last-child { text-align: right; }
+.tco-breakdown-note { color: var(--muted); font-size: 0.78rem; padding-top: 0.5rem; display: block; }
+
+.tco-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  background: var(--cream-2);
+  color: var(--cb-red-dark);
+  font-size: 0.68rem;
+  font-weight: 900;
+  cursor: help;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+}
+.tco-tip-bubble {
+  display: none;
+  position: absolute;
+  z-index: 30;
+  bottom: 135%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 15rem;
+  background: var(--ink);
+  color: #f2f4f6;
+  padding: 0.6rem 0.7rem;
+  border-radius: 0.65rem;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  font-weight: 500;
+  text-align: left;
+  cursor: auto;
+  box-shadow: var(--shadow);
+  white-space: normal;
+}
+.tco-tip-bubble .tco-tip-figure { display:block; color:#fff; font-weight:750; margin-bottom:0.2rem; }
+.tco-tip-bubble .tco-tip-source { display:block; color:#b9c2c9; }
+.tco-tip:hover .tco-tip-bubble, .tco-tip:focus .tco-tip-bubble, .tco-tip.tco-tip-show .tco-tip-bubble { display: block; }
+.tco-tip-bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--ink);
+}
+@media (max-width: 640px) {
+  .tco-tip-bubble { left: auto; right: -0.5rem; transform: none; }
+  .tco-tip-bubble::after { left: auto; right: 0.7rem; transform: none; }
+}
+</style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="brand-row">
+      <div class="logo-mark"></div>
+      Couchbase <span style="color:var(--muted); font-weight:600;">&middot; TCO Estimator (simplified POC)</span>
+    </div>
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">Consolidation estimate</p>
+        <h1>What does running five databases actually cost you?</h1>
+        <p class="subhead">Select the point solutions you run today, tell us your throughput, and see a directional annual savings estimate based on editable assumptions.</p>
+      </div>
+      <div class="hero-card">
+        <strong style="font-size:1.05rem;">Important!</strong>
+        <p>This estimator does not guarantee savings. Treat the numbers as a starting point for discussion, not a quote. This is a prototype, and the figures here may not be accurate.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <main>
+      <p class="eyebrow">Step 1</p>
+      <h2>Current tools</h2>
+      <div class="tool-groups" id="toolGroups"></div>
+
+      <p class="eyebrow section-heading spaced">Step 2</p>
+      <h2>Workload size</h2>
+      <div class="field">
+        <div>
+          <label>Operations per second</label>
+          <p><span class="info-dot">&#9432;</span> Sustained ops/sec across reads &amp; writes — the throughput basis for both stacks.</p>
+        </div>
+        <div class="field-controls">
+          <input type="range" id="opsSlider" min="100" max="200000" step="100" value="5000">
+          <input type="number" id="opsInput" min="1" value="5000">
+        </div>
+      </div>
+      <div class="button-row">
+        <button type="button" class="tco-ghost-btn" data-ops="1000">1K &middot; small app</button>
+        <button type="button" class="tco-ghost-btn" data-ops="10000">10K &middot; mid-size</button>
+        <button type="button" class="tco-ghost-btn" data-ops="50000">50K &middot; large scale</button>
+        <button type="button" class="tco-ghost-btn" data-ops="150000">150K &middot; hyperscale</button>
+      </div>
+
+      <div class="field" style="margin-top:1rem;">
+        <div>
+          <label>Monthly token budget <span class="tco-badge">optional</span></label>
+          <p><span class="info-dot">&#9432;</span> Take it straight off your monthly model-provider bill &mdash; the dollar total you pay for tokens today, across all models. No need to break out input vs. output tokens or count calls; the bill already nets all of that out. Leave at 0 to skip this section. It is <strong>not</strong> derived from ops/sec above: database operations and model calls differ by orders of magnitude, so it has to come from the bill.</p>
+        </div>
+        <div class="field-controls">
+          <input type="number" id="llmSpendMonthly" min="0" step="500" value="0" placeholder="0">
+          <span class="source-line">US dollars per month. Estimated as its own line item, never folded into the consolidation savings figure.</span>
+        </div>
+      </div>
+
+      <div id="archetypeBlock" class="tool-group" style="margin-top:1rem;">
+        <h3>What shape is the workload? <span class="tco-badge">shapes the estimate</span></h3>
+        <p class="subhead" style="font-size:0.85rem; margin-bottom:0.8rem;">How often a request can be answered from cache is a property of your workload, not of Couchbase &mdash; and it swings by roughly tenfold across these four. It moves the token estimate more than any other input on this page, which is why it sits here rather than behind the form.</p>
+        <div class="check-grid" id="archetypeGrid">
+          <label class="check-card"><input type="radio" name="archetype" value="unknown" checked><span>Not sure yet<small>Widest range. 7&ndash;18% of the token budget.</small></span></label>
+          <label class="check-card"><input type="radio" name="archetype" value="faq"><span>FAQ knowledge base<small>A finite question set, asked over and over. 25&ndash;42%.</small></span></label>
+          <label class="check-card"><input type="radio" name="archetype" value="rag"><span>RAG / document search<small>Retrieval over a corpus; intent repeats, wording varies. 11&ndash;22%.</small></span></label>
+          <label class="check-card"><input type="radio" name="archetype" value="chat"><span>Free-form agent chat<small>Long, unique, multi-turn context. Little repetition. 2&ndash;7%.</small></span></label>
+        </div>
+        <p class="source-line" id="archetypeBlurb" style="margin-top:0.65rem;">No shape picked yet, so the range spans most plausible workloads. Pick one to narrow it.</p>
+      </div>
+
+      <p class="eyebrow section-heading spaced">Step 3</p>
+      <h2>Refine the estimate <span class="tco-badge">optional</span></h2>
+      <p class="subhead" style="font-size:0.95rem; margin-bottom:1rem;">By default we assume MSRP / public list pricing and blended engineering assumptions. Unlock this section to adjust cost basis and staffing assumptions for your environment.</p>
+
+      <div class="panel" id="gatePrompt">
+        <div class="button-row" style="margin:0;">
+          <button type="button" id="unlockBtn">Unlock advanced inputs &rarr;</button>
+          <button type="button" id="devUnlockBtn" class="tco-ghost-btn">skip form (testing/demo)</button>
+        </div>
+      </div>
+
+      <form class="panel tco-lead-form tco-hidden" id="leadForm" style="margin-top:1rem;">
+        <div class="input-stack">
+          <input type="text" id="leadName" placeholder="Full name" required>
+          <div class="tco-lead-row2">
+            <input type="email" id="leadEmail" placeholder="Work email" required>
+            <input type="text" id="leadCompany" placeholder="Company">
+          </div>
+          <div class="button-row" style="margin:0;">
+            <button type="submit">Unlock advanced inputs</button>
+            <p class="source-line" style="margin:0;">We'll use this to follow up on your estimate — no spam, no shared lists.</p>
+          </div>
+        </div>
+      </form>
+
+      <div class="advanced tco-hidden" id="advancedFields" style="margin-top:1rem;">
+        <h3 style="margin-bottom:0.4rem;">Cost basis by tool</h3>
+        <p class="subhead" style="font-size:0.85rem; margin-bottom:0.8rem;">Defaults assume public MSRP / list pricing per unit of throughput, per year. Adjust to your actual negotiated rates for a more precise number.</p>
+        <div class="input-stack" id="costFields"></div>
+        <div class="input-stack" style="margin-top:0.9rem;">
+          <div class="field">
+            <div><label>Couchbase (Capella Enterprise) &mdash; $ / ops-sec / yr</label><p>$1.57/ops-sec/yr &mdash; Couchbase Capella Enterprise (couchbase.com/pricing), 3-node minimum, $1.72/hr, assuming ~800 sustained ops/sec/vCPU. Same sizing methodology as MongoDB Atlas Dedicated, for direct comparability. Entered independently &mdash; not derived as a discount off any competitor's price.</p></div>
+            <input type="number" id="cbUnitCost" value="1.57" step="0.01">
+          </div>
+        </div>
+
+        <h3 style="margin:1.2rem 0 0.4rem;">Engineering assumptions</h3>
+        <div class="input-stack">
+          <div class="field">
+            <div><label>Fully-loaded engineer cost</label><p>$ per engineer, per year</p></div>
+            <input type="number" id="engineerCost" value="165000" step="1000">
+          </div>
+          <div class="field">
+            <div><label>Admin engineers, per tool</label><p>Fractional FTE, applied per selected legacy tool</p></div>
+            <input type="number" id="adminFTE" value="0.40" step="0.05">
+          </div>
+          <div class="field">
+            <div><label>Integration engineers, per tool</label><p>Fractional FTE, applied per selected legacy tool</p></div>
+            <input type="number" id="integFTE" value="0.25" step="0.05">
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-card tco-hidden" id="demoCTA" style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+        <p style="max-width:26rem; margin:0;"><strong style="color:#fff;">Want to see this against your real workload?</strong><br>A 20-minute call is usually enough to sanity-check the numbers.</p>
+        <a href="https://www.couchbase.com/get-a-demo/" target="_blank" rel="noopener"><button type="button" class="tco-invert-btn">Book a 20-min demo</button></a>
+      </div>
+
+      <details class="advanced" style="margin-top:2rem;">
+        <summary>Methodology &amp; validation notes</summary>
+        <div class="input-stack" style="margin-top:0.9rem; font-size:0.88rem; color:var(--ink); display:block;">
+          <p><strong>Cost model.</strong> (unchanged) For each selected tool: <code>annual cost = ($/ops-sec/yr &times; ops/sec) + (admin FTE + integration FTE) &times; engineer cost</code>, summed across every tool you select. Couchbase is modeled the same way, but as a single consolidated platform &mdash; one admin/integration allocation instead of one per tool. That consolidation gap is the source of the savings estimate, not a discount applied to any competitor's price.</p>
+          <p><strong>Not every vendor is priced the same way.</strong> Databases don't all sell by the same yardstick. Some charge per operation, some rent you a server by the hour, and one vendor's number comes directly from a benchmark that vendor published themselves. This tool prices each vendor by whichever method that vendor actually sells through — not by picking whichever framing produces a smaller number. When a vendor rents a server, the list price gets divided by a reasonable estimate of how much traffic that server can handle. That traffic estimate is ours, not the vendor's, and it's disclosed on every row that uses it.</p>
+          <p><strong>Watch for a cheaper tier that doesn't apply here.</strong> A few vendors sell a separate, cheaper tier meant for small or bursty traffic — a dev/test tier, or pay-as-you-go pricing with no minimum commitment. Those tiers are real, but they're not what this tool models, because they don't hold up at the steady, production-scale traffic this calculator assumes. If a prospect points to a lower number on a vendor's own pricing page, ask what tier it's coming from — it's very likely the small/burst tier, not the one a real production deployment would actually run on.</p>
+          <p><strong>Complexity reduction.</strong> Reduction = 1 &minus; (1 system after &divide; N systems selected today). Selecting a single tool is a 1-for-1 swap with nothing to consolidate, so it correctly shows 0%; the reduction grows as more systems are replaced by the one consolidated Couchbase platform (2 tools &rarr; 50%, 3 &rarr; 67%, 5 &rarr; 80%). It's directional &mdash; meant to make the qualitative case (less duplication, smaller footprint, fewer integration points), not a formal risk score.</p>
+          <p><strong>Ranges, not points.</strong> Headline numbers are shown as a range (roughly &plusmn;12&ndash;15%) because even a precisely-sourced vendor price is being multiplied by a modeled workload — real traffic has spikes and quiet periods that a single number can't capture. Unlocking Step 03 lets you tighten the range with your own actual contracts and traffic patterns.</p>
+          <p><strong>Reality check.</strong> Every default figure in this tool is sourced to a vendor's own public pricing page, a vendor's own published benchmark, or — for the handful of rows with no public price at all — a clearly labeled estimate. These aren't rough guesses dressed up as numbers. Two things remain our own modeling choices, not the vendor's, and both are disclosed rather than hidden: how much traffic a rented server can realistically handle, and which of a vendor's pricing tiers matches the steady, ongoing production workload this tool is built to model.</p>
+
+          <p style="margin-top:1.1rem;"><strong>Inference savings &mdash; a separate model.</strong> The inference card estimates what caching takes off your model bill: <code>annual savings = annual model spend &times; addressable share &times; cache hit rate</code>, shown as a range driven by a low and high hit rate. It is reported as its own line item and is <em>never</em> added to the consolidation savings figure or its denominator. That separation is deliberate: at mid-market model spend, inference frequently costs more per year than the entire database stack, so blending the two would let an inference assumption swamp the consolidation result that is the actual subject of this tool. Two labelled numbers, never one blended percentage.</p>
+          <p><strong>Why hit rate is the whole answer.</strong> Cache savings reduce to how often a request can be served without calling the model. That rate is a property of the workload, not of Couchbase &mdash; a bounded FAQ assistant and an open-ended agent differ by roughly an order of magnitude. Whatever value is assumed for it effectively <em>is</em> the output, which is why it is exposed as a named archetype with a visible range rather than buried as a constant. The default is deliberately the widest and most conservative band. It sits in Step 02 rather than behind the contact form precisely because it drives the answer &mdash; gating the single most influential input would mean the ungated estimate is the least informed one.</p>
+        </div>
+      </details>
+
+      <details class="advanced" style="margin-top:1rem;">
+        <summary>Disclaimer</summary>
+        <div class="input-stack" style="margin-top:0.9rem; font-size:0.88rem; color:var(--ink); display:block;">
+          <p><strong>Disclaimer.</strong> This tool provides directional, illustrative estimates only and is not a quote, offer, or guarantee of savings, pricing, or performance. It is intended to support internal evaluation and discovery conversations, not as the sole basis for a purchasing decision.</p>
+          <p>Figures shown for products other than Couchbase are estimates based on publicly available pricing, documentation, and benchmarks as of the date noted for each source, using assumptions about workload size, traffic patterns, and configuration that we have disclosed within this tool. Third-party pricing changes without notice; always confirm current pricing directly with the vendor before making a decision. Couchbase is not affiliated with, and this tool is not endorsed by, any third-party company referenced here. All third-party product and company names are trademarks of their respective owners.</p>
+          <p>Actual costs for any product, including Couchbase, will vary based on your specific configuration, negotiated rates, usage patterns, and support terms, and may differ materially from the estimates shown. This tool does not constitute financial, legal, procurement, or professional advice. Couchbase makes no warranty, express or implied, as to the accuracy or completeness of the information provided and disclaims liability for decisions made in reliance on it.</p>
+        </div>
+      </details>
+    </main>
+
+    <aside class="results-panel">
+      <div class="panel">
+        <h2 style="font-size:1.1rem;">Directional annual impact</h2>
+        <div class="result-grid">
+          <div class="result-card primary">
+            <span>Estimated Annual Savings</span>
+            <strong id="savingsValue">Select tools to see an estimate</strong>
+            <p id="savingsPct" style="color:rgba(255,255,255,0.85); margin-top:0.5rem; font-size:0.85rem; font-weight:600;"></p>
+          </div>
+          <div class="result-card">
+            <span>Complexity Reduction</span>
+            <strong id="complexityValue">&mdash;</strong>
+            <p id="complexitySub" style="color:var(--muted); margin-top:0.5rem; font-size:0.78rem; font-weight:600;">Fewer systems, less duplication, smaller footprint</p>
+          </div>
+          <div class="result-card">
+            <span>Tools Selected</span>
+            <strong id="toolsCount">0</strong>
+          </div>
+          <div class="result-card" id="inferenceCard" style="grid-column:1 / -1; background:#fff7e5; border-color:rgba(154,91,0,0.28);">
+            <span style="color:var(--amber);">Token Savings &mdash; separate from stack</span>
+            <strong id="inferenceValue">&mdash;</strong>
+            <p id="inferenceSub" style="color:var(--muted); margin-top:0.5rem; font-size:0.78rem; font-weight:600; line-height:1.45;">Enter your monthly model spend in Step 02 to estimate inference savings from caching. Tracked separately from the stack numbers above.</p>
+          </div>
+        </div>
+
+        <div class="message warning tco-hidden" id="lowSavingsMsg">At this scale, savings look minimal &mdash; talk to us about the right fit.</div>
+
+        <button type="button" id="toggleBreakdown" class="tco-ghost-btn" style="margin-top:1rem;">How we calculate this &#9662;</button>
+        <div class="summary-box" id="breakdownBox" style="display:none;">
+          <table class="tco-breakdown-table" id="breakdownTable"></table>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <h3 style="font-size:0.95rem;">Selected tools</h3>
+        <div id="selectedChips"><span class="tco-chip empty">None selected yet</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>Couchbase TCO Console &mdash; internal proof of concept. Figures are estimates for discussion purposes and are not a binding quote.</footer>
+
+<script>
+const COMPETITORS = [
+  {id:'firebase',   name:'Firebase',    cat:'Mobile', unitCost:18.90, blurb:'Google’s mobile / realtime backend, billed on reads, writes & storage.', source:'List price: Google Firestore, $0.30/M reads + $0.90/M writes, blended 50/50 and annualized. <a href="https://cloud.google.com/firestore/pricing" target="_blank" rel="noopener">cloud.google.com/firestore/pricing</a>'},
+  {id:'ditto',      name:'Ditto', cat:'Mobile', unitCost:25, blurb:'Peer-to-peer edge sync for offline-first mobile apps.', source:'Ditto does not publish list pricing (quote-based). Figure is an unverified planning estimate.'},
+  {id:'mongodb',    name:'MongoDB (Atlas Dedicated)', cat:'JSON / Document', unitCost:2.96, blurb:'Document database — Atlas Dedicated list pricing.', source:'List price: Atlas Dedicated M30 tier, $0.54/hr, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">mongodb.com/pricing</a>. For workloads under 500 ops/sec, MongoDB’s Flex tier runs cheaper — $0.72/ops-sec/yr.'},
+  {id:'dynamodb',   name:'DynamoDB',    cat:'JSON / Document', unitCost:11.81, blurb:'AWS managed key-value / document store.', source:'List price: AWS on-demand rate, $0.125/M reads + $0.625/M writes, blended 50/50 and annualized. <a href="https://aws.amazon.com/dynamodb/pricing" target="_blank" rel="noopener">aws.amazon.com/dynamodb/pricing</a>'},
+  {id:'redis',      name:'Redis',       cat:'Cache',  unitCost:0.48, blurb:'In-memory cache / store.', source:'Redis Cloud Pro, at a representative 5,000 ops/sec, subject to a $200/month minimum. Effective rate stays within $0.38–$0.48 across most realistic throughput levels. <a href="https://redis.io/pricing/" target="_blank" rel="noopener">redis.io/pricing</a>'},
+  {id:'memcached',  name:'Memcached',   cat:'Cache',  unitCost:0.33, blurb:'Open-source cache; cost reflects hosting only, not license.', source:'AWS ElastiCache Serverless, at a representative 5,000 ops/sec. A $1,095/year minimum storage fee means this rate is not flat — it runs higher at low throughput ($11), lower at high throughput ($0.13). <a href="https://aws.amazon.com/elasticache/pricing/" target="_blank" rel="noopener">aws.amazon.com/elasticache/pricing</a>'},
+  {id:'oracle',     name:'Oracle',      cat:'SQL',    unitCost:30, blurb:'Enterprise RDBMS — list pricing plus support.', source:'$47.5K/processor list + 22%/yr support, amortized, ÷ an assumed sustained-throughput-per-processor. <a href="https://www.oracle.com/database/pricing/" target="_blank" rel="noopener">oracle.com/database/pricing</a>'},
+  {id:'sqlserver',  name:'SQL Server',  cat:'SQL',    unitCost:4.25, blurb:'Microsoft RDBMS — Enterprise Edition list pricing.', source:'SQL Server 2022 Enterprise, perpetual license, $7,561.50/core + ~25%/yr Software Assurance, amortized over 5 years, assuming ~800 sustained ops/sec per core. Priced for 2022 (2025 edition pricing not yet public). <a href="https://www.microsoft.com/en-us/sql-server/sql-server-2022-pricing" target="_blank" rel="noopener">microsoft.com/sql-server/pricing</a>'},
+  {id:'postgres',   name:'Postgres',    cat:'SQL',    unitCost:0.96, blurb:'Open-source RDBMS; cost reflects managed hosting, not license.', source:'AWS RDS for PostgreSQL, db.m6g.large On-Demand, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://aws.amazon.com/rds/postgresql/pricing/" target="_blank" rel="noopener">aws.amazon.com/rds/postgresql/pricing</a>'},
+  {id:'mongovector',name:'MongoDB (Vector, Scalar Quantization)', cat:'Vector Search', unitCost:78, blurb:'Vector search add-on on MongoDB Atlas.', source:'MongoDB’s own published Vector Search benchmark, at a realistic 15.3M-vector scale, scalar quantization: dedicated Search Nodes, $1.04/hr for 2 nodes, 116.8 QPS. <a href="https://www.mongodb.com/docs/vector-search/benchmark/overview/" target="_blank" rel="noopener">mongodb.com/docs/vector-search/benchmark/overview</a> &middot; <a href="https://www.mongodb.com/docs/vector-search/benchmark/results/" target="_blank" rel="noopener">results</a>'},
+  {id:'alloydb',    name:'AlloyDB',     cat:'Vector Search', unitCost:13, blurb:'Google Cloud’s Postgres-compatible database with vector support.', source:'Empirical: head-to-head Couchbase-vs-AlloyDB vector search benchmark on matched hardware (100M vectors, 768-dim and 128-dim), using AlloyDB’s ScaNN index — Google’s recommended, best-performing configuration at this scale (not stock pgvector). Consistent across both datasets.'},
+  {id:'pinecone',   name:'Pinecone',    cat:'Vector Search', unitCost:198, blurb:'Serverless vector database, billed on read/write units + storage.', source:'Dedicated Read Nodes (Pinecone’s tier for sustained, high-QPS workloads): T1 node, $969/month (AWS us-east-1, Standard), sized to Pinecone’s own published customer benchmark (200–270 QPS, 14M vectors, 4 replicas). For bursty/unpredictable traffic, Pinecone’s pay-per-request tier runs closer to $2,000/ops-sec/yr instead. <a href="https://docs.pinecone.io/guides/manage-cost/understanding-cost" target="_blank" rel="noopener">docs.pinecone.io/guides/manage-cost/understanding-cost</a>'},
+  {id:'elasticsearch', name:'Elasticsearch', cat:'Full Text Search', unitCost:2, blurb:'Distributed full-text search & analytics engine.', source:'List price: Elastic Cloud Serverless, $0.09/VCU-hr search + $0.14/VCU-hr ingest (official rate), blended 70/30 search-weighted, ÷ an assumed ~500 sustained ops/sec per VCU (our sizing assumption). <a href="https://checkthat.ai/brands/elastic/pricing" target="_blank" rel="noopener">Elastic Serverless pricing summary</a>'},
+];
+const CATEGORY_ORDER = ['Mobile','JSON / Document','Cache','SQL','Vector Search','Full Text Search'];
+
+/* ===== Inference (token) savings module =====
+   Deliberately separate from the consolidation model above. Two inputs only,
+   both ungated: monthly token budget (required) and workload shape (optional).
+   Reduction = addressableShare x cacheHitRate. Both terms are MODELING
+   ASSUMPTIONS, not benchmark results -- see the internal notes section. */
+const TOKEN_ARCHETYPES = {
+  unknown: {
+    label: 'Not specified (widest range)',
+    addressable: 0.45, hitLow: 0.15, hitHigh: 0.40,
+    blurb: 'No archetype set, so the range spans most plausible workloads. Set one to narrow it.'
+  },
+  faq: {
+    label: 'Bounded FAQ / support assistant',
+    addressable: 0.70, hitLow: 0.35, hitHigh: 0.60,
+    blurb: 'A finite question set asked repeatedly. Highest share of traffic is cache-eligible and repeats are frequent.'
+  },
+  rag: {
+    label: 'Document RAG / knowledge search',
+    addressable: 0.55, hitLow: 0.20, hitHigh: 0.40,
+    blurb: 'Retrieval over a corpus. Moderate repetition; some queries recur, many are one-off phrasings of similar intent.'
+  },
+  chat: {
+    label: 'Open-ended chat / autonomous agents',
+    addressable: 0.35, hitLow: 0.05, hitHigh: 0.20,
+    blurb: 'Long, unique, multi-turn context. Little exact or near repetition, so cache eligibility is low.'
+  }
+};
+
+const state = {
+  selected: new Set(),
+  ops: 5000,
+  llmSpendMonthly: 0,
+  archetype: 'unknown',
+  unlocked: false,
+  overrides: {},
+  cbUnitCost: 1.57,
+  engineerCost: 165000,
+  adminFTE: 0.40,
+  integFTE: 0.25,
+  cbAdminFTE: 0.6,
+  cbIntegFTE: 0.4,
+};
+
+function fmtUSD(n){ return n.toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}); }
+
+function buildToolGroups(){
+  const wrap = document.getElementById('toolGroups');
+  wrap.innerHTML = CATEGORY_ORDER.map(cat => {
+    const items = COMPETITORS.filter(c => c.cat === cat);
+    const cards = items.map(c => `
+      <label class="check-card" data-id="${c.id}">
+        <input type="checkbox" id="chk-${c.id}">
+        <span style="display:block;">
+          <span>${c.name}<span class="tco-tip" tabindex="0">&#9432;<span class="tco-tip-bubble">
+            <span class="tco-tip-figure">${fmtUSD(c.unitCost)} / ops-sec / yr</span>
+            <span class="tco-tip-source">${c.source}</span>
+          </span></span></span>
+          <small>${c.blurb}</small>
+        </span>
+      </label>`).join('');
+    return `<div class="tool-group"><h3>${cat}</h3><div class="check-grid">${cards}</div></div>`;
+  }).join('');
+
+  wrap.querySelectorAll('.tco-tip').forEach(tip => {
+    tip.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const wasOpen = tip.classList.contains('tco-tip-show');
+      document.querySelectorAll('.tco-tip-show').forEach(t => t.classList.remove('tco-tip-show'));
+      if(!wasOpen) tip.classList.add('tco-tip-show');
+    });
+  });
+
+  wrap.querySelectorAll('.check-card').forEach(card => {
+    const id = card.dataset.id;
+    const chk = card.querySelector('input[type=checkbox]');
+    chk.addEventListener('change', () => {
+      if(chk.checked) state.selected.add(id); else state.selected.delete(id);
+      render();
+    });
+  });
+}
+
+function buildCostFields(){
+  const wrap = document.getElementById('costFields');
+  wrap.innerHTML = COMPETITORS.map(c => `
+    <div class="field" data-cost-field="${c.id}" style="${state.selected.has(c.id) ? '' : 'display:none;'}">
+      <div><label>${c.name}</label><p>$ / ops-sec / yr</p></div>
+      <input type="number" data-cost-input="${c.id}" value="${c.unitCost}" step="0.05">
+    </div>`).join('');
+  wrap.querySelectorAll('[data-cost-input]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      state.overrides[inp.dataset.costInput] = parseFloat(inp.value) || 0;
+      render();
+    });
+  });
+}
+
+function refreshCostFieldVisibility(){
+  document.querySelectorAll('[data-cost-field]').forEach(el => {
+    el.style.display = state.selected.has(el.dataset.costField) ? '' : 'none';
+  });
+}
+
+function unitCostFor(c){ return state.overrides.hasOwnProperty(c.id) ? state.overrides[c.id] : c.unitCost; }
+
+function compute(){
+  const selectedTools = COMPETITORS.filter(c => state.selected.has(c.id));
+  const n = selectedTools.length;
+
+  let currentTotal = 0;
+  const rows = selectedTools.map(c => {
+    const unit = unitCostFor(c);
+    const infra = unit * state.ops;
+    const people = (state.adminFTE + state.integFTE) * state.engineerCost;
+    const subtotal = infra + people;
+    currentTotal += subtotal;
+    return {name:c.name, subtotal};
+  });
+
+  const cbInfra = state.cbUnitCost * state.ops;
+  const cbPeople = (state.cbAdminFTE + state.cbIntegFTE) * state.engineerCost;
+  const cbTotal = cbInfra + cbPeople;
+
+  const savings = currentTotal - cbTotal;
+  const savingsPct = currentTotal > 0 ? (savings / currentTotal) * 100 : 0;
+
+  const currentComplexity = n; // systems in play today
+  const cbComplexity = n === 0 ? 0 : 1; // consolidated down to one platform
+  // Reduction is driven directly by how many systems are actually being eliminated:
+  // 1 tool selected = a straight swap, nothing consolidated, 0% reduction.
+  // 2+ tools = real consolidation, reduction grows with each system removed.
+  const complexityMid = n <= 1 ? 0 : Math.max(0, Math.min(95, (1 - (1 / n)) * 100));
+
+  return {n, rows, currentTotal, cbTotal, savings, savingsPct, currentComplexity, cbComplexity, complexityMid};
+}
+
+/* Retrieval tools in the selection tell us the workload is retrieval-shaped.
+   That informs the ADDRESSABLE share, not the hit rate -- so we surface it as a
+   suggestion rather than silently substituting an archetype. */
+function retrievalToolsSelected(){
+  return COMPETITORS.some(c => state.selected.has(c.id) && (c.cat === 'Vector Search' || c.cat === 'Full Text Search'));
+}
+
+function archetypeMeta(){
+  return TOKEN_ARCHETYPES[state.archetype] || TOKEN_ARCHETYPES.unknown;
+}
+
+function computeInference(){
+  const monthly = Math.max(0, state.llmSpendMonthly || 0);
+  const annual = monthly * 12;
+  const a = archetypeMeta();
+  const redLow = a.addressable * a.hitLow;
+  const redHigh = a.addressable * a.hitHigh;
+  const savedLow = annual * redLow;
+  const savedHigh = annual * redHigh;
+  // Couchbase-side residual: cache hits are served locally, misses still bill the
+  // model provider. Inference never goes to zero.
+  const residualLow = annual - savedHigh;
+  const residualHigh = annual - savedLow;
+  return {
+    active: annual > 0,
+    monthly, annual, meta: a, key: state.archetype,
+    redLow, redHigh, savedLow, savedHigh, residualLow, residualHigh,
+    suggestRag: state.archetype === 'unknown' && retrievalToolsSelected()
+  };
+}
+
+function render(){
+  refreshCostFieldVisibility();
+  const r = compute();
+  const inf = computeInference();
+  renderInference(inf);
+
+  document.getElementById('toolsCount').textContent = r.n;
+
+  const chipWrap = document.getElementById('selectedChips');
+  chipWrap.innerHTML = r.n === 0
+    ? '<span class="tco-chip empty">None selected yet</span>'
+    : COMPETITORS.filter(c => state.selected.has(c.id)).map(c => `<span class="tco-chip">${c.name}</span>`).join('');
+
+  const savingsEl = document.getElementById('savingsValue');
+  const savingsPctEl = document.getElementById('savingsPct');
+  const lowMsg = document.getElementById('lowSavingsMsg');
+  if(r.n === 0){
+    savingsEl.textContent = 'Select tools to see an estimate';
+    savingsPctEl.textContent = '';
+    lowMsg.classList.add('tco-hidden');
+  } else if(r.savings <= 0){
+    savingsEl.textContent = fmtUSD(0);
+    savingsPctEl.textContent = '';
+    lowMsg.classList.remove('tco-hidden');
+  } else {
+    const low = r.savings * 0.85, high = r.savings * 1.15;
+    const lowPct = r.savingsPct * 0.85, highPct = r.savingsPct * 1.15;
+    savingsEl.textContent = `${fmtUSD(low)} – ${fmtUSD(high)}`;
+    savingsPctEl.textContent = `${lowPct.toFixed(0)}% – ${highPct.toFixed(0)}% lower than your current stack, per year`;
+    lowMsg.classList.add('tco-hidden');
+  }
+
+  const complexityEl = document.getElementById('complexityValue');
+  const complexitySubEl = document.getElementById('complexitySub');
+  if(r.n === 0){
+    complexityEl.textContent = '—';
+    complexitySubEl.textContent = 'Fewer systems, less duplication, smaller footprint';
+  } else if(r.n === 1){
+    complexityEl.textContent = '0%';
+    complexitySubEl.textContent = 'A 1-for-1 swap — select 2+ tools to see a consolidation effect';
+  } else {
+    const low = Math.max(0, r.complexityMid - 6), high = Math.min(95, r.complexityMid + 6);
+    complexityEl.textContent = `${low.toFixed(0)}% – ${high.toFixed(0)}%`;
+    complexitySubEl.textContent = 'Fewer systems, less duplication, smaller footprint';
+  }
+
+  const bt = document.getElementById('breakdownTable');
+  if(r.n === 0){
+    bt.innerHTML = `<tr><td colspan="2">Select tools to see the breakdown.</td></tr>`;
+  } else {
+    let html = r.rows.map(row => `<tr><td>${row.name} (current)</td><td>${fmtUSD(row.subtotal)}/yr</td></tr>`).join('');
+    html += `<tr><td><strong>Current stack total</strong></td><td><strong>${fmtUSD(r.currentTotal)}/yr</strong></td></tr>`;
+    html += `<tr><td>Couchbase (Capella Enterprise, consolidated)</td><td>${fmtUSD(r.cbTotal)}/yr</td></tr>`;
+    html += `<tr><td colspan="2"><span class="tco-breakdown-note">Systems today: ${r.n} → after: 1. Reduction = 1 − (1 ÷ ${r.n}) = ${r.complexityMid.toFixed(0)}%, based on duplicate data copies, patch/security surfaces & integration points removed as each system is consolidated.</span></td></tr>`;
+    bt.innerHTML = html;
+  }
+
+  if(inf.active){
+    let ih = `<tr><td colspan="2"><span class="tco-breakdown-note"><strong>Token budget (separate line item &mdash; not included in the stack figures above)</strong></span></td></tr>`;
+    ih += `<tr><td>Current token budget</td><td>${fmtUSD(inf.annual)}/yr</td></tr>`;
+    ih += `<tr><td>Cache-eligible share &times; hit rate</td><td>${(inf.redLow*100).toFixed(0)}% &ndash; ${(inf.redHigh*100).toFixed(0)}%</td></tr>`;
+    ih += `<tr><td>Residual budget after caching</td><td>${fmtUSD(inf.residualLow)} &ndash; ${fmtUSD(inf.residualHigh)}/yr</td></tr>`;
+    ih += `<tr><td colspan="2"><span class="tco-breakdown-note">${inf.meta.label}: ${(inf.meta.addressable*100).toFixed(0)}% of the budget cache-eligible, ${(inf.meta.hitLow*100).toFixed(0)}&ndash;${(inf.meta.hitHigh*100).toFixed(0)}% hit rate. These two figures are modeling assumptions, not measured results &mdash; see Methodology.</span></td></tr>`;
+    bt.innerHTML += ih;
+  }
+}
+
+function renderInference(inf){
+  const card = document.getElementById('inferenceCard');
+  const val = document.getElementById('inferenceValue');
+  const sub = document.getElementById('inferenceSub');
+  if(!card) return;
+
+  if(!inf.active){
+    val.textContent = '\u2014';
+    sub.innerHTML = 'Enter your monthly token budget in Step 02 to estimate savings from caching. Tracked separately from the stack numbers above.';
+    return;
+  }
+
+  val.textContent = `${fmtUSD(inf.savedLow)} \u2013 ${fmtUSD(inf.savedHigh)}`;
+  const pct = `${(inf.redLow*100).toFixed(0)}% \u2013 ${(inf.redHigh*100).toFixed(0)}% of a ${fmtUSD(inf.annual)}/yr token budget`;
+  const hint = inf.suggestRag
+    ? ' <span style="color:var(--amber);">You selected vector/search tools &mdash; &ldquo;RAG / document search&rdquo; is likely the closer shape. Pick it in Step 02 to narrow this range.</span>'
+    : '';
+  sub.innerHTML = `${pct}. Assumption-based, not benchmarked.${hint}`;
+}
+
+function setOps(v){
+  v = Math.max(1, Math.round(v));
+  state.ops = v;
+  document.getElementById('opsSlider').value = Math.min(200000, v);
+  document.getElementById('opsInput').value = v;
+  render();
+}
+document.getElementById('opsSlider').addEventListener('input', e => setOps(parseInt(e.target.value,10)));
+document.getElementById('opsInput').addEventListener('input', e => setOps(parseInt(e.target.value,10) || 0));
+document.querySelectorAll('.button-row [data-ops]').forEach(btn => {
+  btn.addEventListener('click', () => setOps(parseInt(btn.dataset.ops,10)));
+});
+
+document.getElementById('toggleBreakdown').addEventListener('click', () => {
+  const box = document.getElementById('breakdownBox');
+  const showing = box.style.display !== 'none';
+  box.style.display = showing ? 'none' : 'block';
+  document.getElementById('toggleBreakdown').innerHTML = showing ? 'How we calculate this &#9662;' : 'How we calculate this &#9652;';
+});
+
+function doUnlock(){
+  state.unlocked = true;
+  document.getElementById('gatePrompt').classList.add('tco-hidden');
+  document.getElementById('leadForm').classList.add('tco-hidden');
+  document.getElementById('advancedFields').classList.remove('tco-hidden');
+  document.getElementById('demoCTA').classList.remove('tco-hidden');
+}
+document.getElementById('unlockBtn').addEventListener('click', () => {
+  document.getElementById('gatePrompt').classList.add('tco-hidden');
+  document.getElementById('leadForm').classList.remove('tco-hidden');
+});
+document.getElementById('leadForm').addEventListener('submit', (e) => { e.preventDefault(); doUnlock(); });
+document.getElementById('devUnlockBtn').addEventListener('click', doUnlock);
+if (new URLSearchParams(window.location.search).get('unlock') === '1') { doUnlock(); }
+
+document.getElementById('llmSpendMonthly').addEventListener('input', (e) => {
+  state.llmSpendMonthly = Math.max(0, parseFloat(e.target.value) || 0);
+  render();
+});
+
+document.querySelectorAll('#archetypeGrid input[name="archetype"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    if(!e.target.checked) return;
+    state.archetype = e.target.value;
+    const blurb = document.getElementById('archetypeBlurb');
+    if(blurb) blurb.textContent = archetypeMeta().blurb;
+    render();
+  });
+});
+
+['cbUnitCost','engineerCost','adminFTE','integFTE'].forEach(id => {
+  document.getElementById(id).addEventListener('input', (e) => {
+    state[id] = parseFloat(e.target.value) || 0;
+    render();
+  });
+});
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.tco-tip-show').forEach(t => t.classList.remove('tco-tip-show'));
+});
+
+buildToolGroups();
+buildCostFields();
+render();
+</script>
+</body>
+</html>
