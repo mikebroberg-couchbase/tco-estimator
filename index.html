@@ -253,8 +253,6 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
   width: 100%; border: 1px solid var(--line); border-radius: 0.65rem; padding: 0.55rem 0.65rem; background: #fff;
 }
 .tco-lead-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
-.tco-chip { display: inline-block; background: #fffdf9; border: 1px solid var(--line); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.82rem; margin: 0.2rem 0.3rem 0 0; }
-.tco-chip.empty { color: var(--muted); border-style: dashed; }
 .tco-breakdown-table { width: 100%; border-collapse: collapse; margin-top: 0.6rem; font-size: 0.82rem; }
 .tco-breakdown-table td { padding: 0.35rem 0; border-bottom: 1px solid var(--line); color: var(--ink); }
 .tco-breakdown-table td:last-child { text-align: right; }
@@ -351,6 +349,19 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
 .faq-item[open] summary::after { content: "\2013"; }
 .faq-item[open] summary { margin-bottom: 0.6rem; }
 .faq-item p { margin: 0; color: #d8dce2; font-size: 0.85rem; line-height: 1.5; }
+
+/* ===== Methodology accordion: real <h3> headings, styled small/compact so they
+   read as section labels rather than full headings, while staying real markup. ===== */
+.methodology-body h3 {
+  margin: 1.1rem 0 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--cb-red-dark);
+}
+.methodology-body h3:first-child { margin-top: 0; }
+.methodology-body p { margin: 0; }
 </style>
 </head>
 <body>
@@ -375,7 +386,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
     <div class="panel" style="margin: 1.5rem clamp(1rem, 4vw, 4rem) 0; padding: clamp(1rem, 2.2vw, 1.6rem);">
       <h2 style="font-size:1.1rem;">How this calculator works</h2>
       <p class="subhead" style="font-size:0.95rem; margin-bottom:0.8rem;">This tool estimates what it costs to run multiple separate databases, caches, and search engines side by side, versus consolidating them onto one Couchbase Capella platform. Select the tools you use today, enter your traffic level, and see infrastructure and team-overhead costs compared directly, with every assumption shown.</p>
-      <p class="subhead" style="font-size:0.95rem;">Nearly every vendor default in this calculator is sourced to that vendor's own public pricing page or published benchmark &mdash; not an internal guess at what a competitor should cost. (Two exceptions: Ditto doesn't publish pricing, and AlloyDB's figure comes from a benchmark Couchbase ran itself, with the underlying compute cost independently verified against Google's public pricing.) Where a number depends on an assumption we made ourselves, like how much traffic a rented server can handle, that's disclosed on the row that uses it. Full sourcing and formulas are in "Methodology &amp; validation notes" below.</p>
+      <p class="subhead" style="font-size:0.95rem;">Nearly every vendor default in this calculator is sourced to that vendor's own public pricing page or a benchmark &mdash; not an internal guess at what a competitor should cost. (The exception is Ditto, which doesn't disclose public pricing.) Where a number depends on an assumption we made ourselves, like how much traffic a rented server can handle, that's disclosed on the row that uses it. Full sourcing and formulas are in "Methodology &amp; validation notes" below.</p>
     </div>
   </div>
 
@@ -397,8 +408,8 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <p>Sustained ops/sec across reads &amp; writes — the throughput basis for both stacks.</p>
         </div>
         <div class="field-controls">
-          <input type="range" id="opsSlider" min="100" max="200000" step="100" value="5000">
-          <input type="number" id="opsInput" min="1" value="5000">
+          <input type="range" id="opsSlider" min="100" max="200000" step="100" value="10000">
+          <input type="number" id="opsInput" min="1" value="10000">
         </div>
       </div>
       <div class="button-row">
@@ -414,7 +425,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <p>Take it straight off your monthly model-provider bill &mdash; the dollar total you pay for tokens today, across all models.</p>
         </div>
         <div class="field-controls">
-          <input type="number" id="llmSpendMonthly" min="0" step="500" value="0" placeholder="0">
+          <input type="number" id="llmSpendMonthly" min="0" max="10000000" step="500" value="0" placeholder="0">
           <span class="source-line">US dollars per month. Estimated as its own line item, never folded into the consolidation savings figure.</span>
         </div>
       </div>
@@ -490,7 +501,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           </details>
           <details class="faq-item">
             <summary>How accurate are the cost estimates?</summary>
-            <p>Every default is sourced to public list pricing or the vendor's own benchmarks. Unlock Step 3 to enter your negotiated rates for a tighter number. Figures are directional, not a quote.</p>
+            <p>Nearly every default is sourced to public pricing or vendor benchmarks &mdash; except Ditto, which doesn't publish pricing. Unlock Step 3 for your own rates. Not a quote.</p>
           </details>
           <details class="faq-item">
             <summary>Do I need to share my email to use the calculator?</summary>
@@ -509,7 +520,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
 
       <details class="advanced" style="margin-top:2rem;">
         <summary>Methodology &amp; validation notes</summary>
-        <div class="input-stack" style="margin-top:0.9rem; font-size:0.88rem; color:var(--ink); display:block;">
+        <div class="input-stack methodology-body" style="margin-top:0.9rem; font-size:0.88rem; color:var(--ink); display:block;">
           <h3>Cost model</h3>
           <p>Each tool: <code>infrastructure cost = $/ops-sec/yr &times; ops/sec</code>, summed across selections. Team &amp; integration overhead is computed once per stack, not per tool &mdash; see below &mdash; then added to get each side's total. The savings estimate comes from the gap between the stack's overhead and Couchbase's, never a discount off any competitor's price.</p>
 
@@ -599,11 +610,6 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <table class="tco-breakdown-table" id="breakdownTable"></table>
         </div>
       </div>
-
-      <div class="summary-box">
-        <h3 style="font-size:0.95rem;">Selected tools</h3>
-        <div id="selectedChips"><span class="tco-chip empty">None selected yet</span></div>
-      </div>
     </aside>
   </div>
 
@@ -677,8 +683,8 @@ const TOKEN_ARCHETYPES = {
 };
 
 const state = {
-  selected: new Set(),
-  ops: 5000,
+  selected: new Set(['mongodb', 'redis']),
+  ops: 10000,
   llmSpendMonthly: 0,
   archetype: 'unknown',
   unlocked: false,
@@ -732,7 +738,7 @@ function buildToolGroups(){
     const items = COMPETITORS.filter(c => c.cat === cat);
     const cards = items.map(c => `
       <label class="check-card" data-id="${c.id}">
-        <input type="checkbox" id="chk-${c.id}">
+        <input type="checkbox" id="chk-${c.id}" ${state.selected.has(c.id) ? 'checked' : ''}>
         <span style="display:block;">
           <span>${renderToolName(c)}<span class="tco-tip" tabindex="0">&#9432;<span class="tco-tip-bubble">
             <span class="tco-tip-figure">${fmtUnitCost(c.unitCost)} / ops-sec / yr</span>
@@ -858,11 +864,6 @@ function render(){
 
   document.getElementById('toolsCount').textContent = r.n;
 
-  const chipWrap = document.getElementById('selectedChips');
-  chipWrap.innerHTML = r.n === 0
-    ? '<span class="tco-chip empty">None selected yet</span>'
-    : COMPETITORS.filter(c => state.selected.has(c.id)).map(c => `<span class="tco-chip">${c.name}</span>`).join('');
-
   const savingsEl = document.getElementById('savingsValue');
   const savingsPctEl = document.getElementById('savingsPct');
   const lowMsg = document.getElementById('lowSavingsMsg');
@@ -975,7 +976,7 @@ document.getElementById('leadForm').addEventListener('submit', (e) => { e.preven
 if (new URLSearchParams(window.location.search).get('unlock') === '1') { doUnlock(); }
 
 document.getElementById('llmSpendMonthly').addEventListener('input', (e) => {
-  state.llmSpendMonthly = Math.max(0, parseFloat(e.target.value) || 0);
+  state.llmSpendMonthly = Math.min(10000000, Math.max(0, parseFloat(e.target.value) || 0));
   render();
 });
 
