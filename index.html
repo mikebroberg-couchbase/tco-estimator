@@ -332,6 +332,12 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
         <p>These are directional estimates to guide your evaluation, not a formal quote — see full methodology below.</p>
       </div>
     </div>
+
+    <div class="panel" style="margin: 1.5rem clamp(1rem, 4vw, 4rem) 0; padding: clamp(1rem, 2.2vw, 1.6rem);">
+      <h2 style="font-size:1.1rem;">How this calculator works</h2>
+      <p class="subhead" style="font-size:0.95rem; margin-bottom:0.8rem;">This tool estimates what it costs to run multiple separate databases, caches, and search engines side by side, versus consolidating them onto one Couchbase Capella platform. Select the tools you use today, enter your traffic level, and see infrastructure and team-overhead costs compared directly, with every assumption shown.</p>
+      <p class="subhead" style="font-size:0.95rem;">Nearly every vendor default in this calculator is sourced to that vendor's own public pricing page or published benchmark &mdash; not an internal guess at what a competitor should cost. (Two exceptions: Ditto doesn't publish pricing, and AlloyDB's figure comes from a benchmark Couchbase ran itself, with the underlying compute cost independently verified against Google's public pricing.) Where a number depends on an assumption we made ourselves, like how much traffic a rented server can handle, that's disclosed on the row that uses it. Full sourcing and formulas are in "Methodology &amp; validation notes" below.</p>
+    </div>
   </div>
 
   <div class="layout">
@@ -431,42 +437,57 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
       </div>
 
       <div class="hero-card tco-hidden" id="demoCTA" style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
-        <p style="max-width:26rem; margin:0;"><strong style="color:#fff;">Want these numbers run against your real traces?</strong><br>A Couchbase architect will size caching, memory, and retrieval against your workload in a 30-minute session.</p>
+        <p style="max-width:26rem; margin:0;"><strong style="color:#fff;">Want to run these numbers against your specific configurations?</strong><br>A Couchbase architect will size caching, memory, and retrieval against your workload in a 30-minute session.</p>
         <a href="https://www.couchbase.com/get-a-demo/" target="_blank" rel="noopener"><button type="button" class="tco-invert-btn">Book a Meeting</button></a>
       </div>
 
       <details class="advanced" style="margin-top:2rem;">
         <summary>Methodology &amp; validation notes</summary>
         <div class="input-stack" style="margin-top:0.9rem; font-size:0.88rem; color:var(--ink); display:block;">
-          <p><strong>Cost model.</strong> Each tool: <code>infrastructure cost = $/ops-sec/yr &times; ops/sec</code>, summed across selections. Team &amp; integration overhead is computed once per stack, not per tool &mdash; see below &mdash; then added to get each side's total. The savings estimate comes from the gap between the stack's overhead and Couchbase's, never a discount off any competitor's price.</p>
+          <h3>Cost model</h3>
+          <p>Each tool: <code>infrastructure cost = $/ops-sec/yr &times; ops/sec</code>, summed across selections. Team &amp; integration overhead is computed once per stack, not per tool &mdash; see below &mdash; then added to get each side's total. The savings estimate comes from the gap between the stack's overhead and Couchbase's, never a discount off any competitor's price.</p>
 
-          <p><strong>Not every vendor is priced the same way.</strong> Some vendors charge per operation, some rent a server by the hour, some publish their own benchmark. We price each by however that vendor actually sells &mdash; never whichever framing looks smaller. For hourly-rented servers: <code>price &divide; assumed sustained throughput</code>. That throughput assumption is ours, not the vendor's, and disclosed on every row that uses it.</p>
+          <h3>Not every vendor is priced the same way</h3>
+          <p>Some vendors charge per operation, some rent a server by the hour, some publish their own benchmark. We price each by however that vendor actually sells &mdash; never whichever framing looks smaller. For hourly-rented servers: <code>price &divide; assumed sustained throughput</code>. That throughput assumption is ours, not the vendor's, and disclosed on every row that uses it.</p>
 
-          <p><strong>Watch for a cheaper tier that doesn't apply here.</strong> Some vendors sell a cheaper dev/test or pay-as-you-go tier for small, bursty traffic &mdash; real, but not what this tool models against the steady, production-scale traffic assumed here.</p>
+          <h3>Watch for a cheaper tier that doesn't apply here</h3>
+          <p>Some vendors sell a cheaper dev/test or pay-as-you-go tier for small, bursty traffic &mdash; real, but not what this tool models against the steady, production-scale traffic assumed here.</p>
 
-          <p><strong>Complexity reduction.</strong> <code>Reduction = 1 &minus; (1 &divide; N systems selected)</code>. One tool = a straight swap, correctly 0%; more consolidated tools raise it (2&rarr;50%, 3&rarr;67%, 5&rarr;80%). Directional &mdash; makes the qualitative case (less duplication, smaller footprint, fewer integration points), not a formal risk score.</p>
+          <h3>Complexity reduction</h3>
+          <p><code>Reduction = 1 &minus; (1 &divide; N systems selected)</code>. One tool = a straight swap, correctly 0%; more consolidated tools raise it (2&rarr;50%, 3&rarr;67%, 5&rarr;80%). Directional &mdash; makes the qualitative case (less duplication, smaller footprint, fewer integration points), not a formal risk score.</p>
 
-          <p><strong>Why team overhead scales with how much you consolidate.</strong> One more database doesn't need a whole extra admin &mdash; teams share tooling across systems they already run. But each extra <em>disparate</em> system adds real integration work: more glue code, more places to keep data in sync. So admin overhead grows slower than 1-for-1 per tool added, integration burden grows faster &mdash; a single tool, nothing to integrate with, adds nothing there. Select just one tool and this shows zero assumed labor savings &mdash; no consolidation has happened, so any savings come from infrastructure pricing alone.</p>
+          <h3>Why team overhead scales with how much you consolidate</h3>
+          <p>One more database doesn't need a whole extra admin &mdash; teams share tooling across systems they already run. But each extra <em>disparate</em> system adds real integration work: more glue code, more places to keep data in sync. So admin overhead grows slower than 1-for-1 per tool added, integration burden grows faster &mdash; a single tool, nothing to integrate with, adds nothing there. Select just one tool and this shows zero assumed labor savings &mdash; no consolidation has happened, so any savings come from infrastructure pricing alone.</p>
 
-          <p><strong>Ranges, not points.</strong> Numbers show as a range (<code>&plusmn;12&ndash;15%</code>) since even a precise price gets multiplied by a modeled workload with real-world spikes a single figure can't capture. Unlock Step 3 to tighten it with your own contracts and traffic.</p>
+          <h3>Ranges, not points</h3>
+          <p>Numbers show as a range (<code>&plusmn;12&ndash;15%</code>) since even a precise price gets multiplied by a modeled workload with real-world spikes a single figure can't capture. Unlock Step 3 to tighten it with your own contracts and traffic.</p>
 
-          <p><strong>Reality check.</strong> Every default here traces to a vendor's own public price, published benchmark, or &mdash; for the few rows with none &mdash; a labeled estimate. Two things stay our own disclosed modeling choices: how much traffic a rented server can handle, and which pricing tier matches the steady production workload assumed here.</p>
+          <h3>Reality check</h3>
+          <p>Every default here traces to a vendor's own public price, published benchmark, or &mdash; for the few rows with none &mdash; a labeled estimate. Two things stay our own disclosed modeling choices: how much traffic a rented server can handle, and which pricing tier matches the steady production workload assumed here.</p>
 
-          <p style="margin-top:1.1rem;"><strong>Inference savings &mdash; a separate model.</strong> <code>annual savings = annual model spend &times; addressable share &times; cache hit rate</code>, shown as a range. Reported as its own line, never added to the consolidation figure or its denominator &mdash; deliberately, since at mid-market spend, inference often costs more per year than the whole database stack, and blending the two would let an inference assumption swamp the result this tool is actually about.</p>
+          <h3 style="margin-top:1.1rem;">Inference savings &mdash; a separate model</h3>
+          <p><code>annual savings = annual model spend &times; addressable share &times; cache hit rate</code>, shown as a range. Reported as its own line, never added to the consolidation figure or its denominator &mdash; deliberately, since at mid-market spend, inference often costs more per year than the whole database stack, and blending the two would let an inference assumption swamp the result this tool is actually about.</p>
 
-          <p><strong>Why hit rate is the whole answer.</strong> Cache savings reduce to how often a request skips the model &mdash; a workload property, not a Couchbase one; a bounded FAQ bot and an open-ended agent differ by roughly 10x. That assumed value effectively is the output, so it's a visible, named range, not a buried constant.</p>
+          <h3>Why hit rate is the whole answer</h3>
+          <p>Cache savings reduce to how often a request skips the model &mdash; a workload property, not a Couchbase one; a bounded FAQ bot and an open-ended agent differ by roughly 10x. That assumed value effectively is the output, so it's a visible, named range, not a buried constant.</p>
 
-          <p><strong>Inference never reaches zero.</strong> Cache misses still bill the provider &mdash; spend never reaches zero (see the residual line in the breakdown table).</p>
+          <h3>Inference never reaches zero</h3>
+          <p>Cache misses still bill the provider &mdash; spend never reaches zero (see the residual line in the breakdown table).</p>
 
-          <p><strong>Why the token budget is expressed in dollars.</strong> A raw token count needs an input/output split and a per-model rate to mean anything &mdash; two more numbers most people would have to guess, and the provider bill already nets both out. Taking the dollar total is one accurate number, in the same unit as the rest of this tool.</p>
+          <h3>Why the token budget is expressed in dollars</h3>
+          <p>A raw token count needs an input/output split and a per-model rate to mean anything &mdash; two more numbers most people would have to guess, and the provider bill already nets both out. Taking the dollar total is one accurate number, in the same unit as the rest of this tool.</p>
 
-          <p><strong>Top-down by choice, not by limitation.</strong> A bottom-up build &mdash; <code>requests/day &times; tokens/call &times; input:output split &times; model rate</code> &mdash; is the right model once you have real telemetry. It's avoided by default because it multiplies four guesses into a number with more decimal places and less truth than what's already on your bill. This tool goes top-down instead, so the result can always be checked against that bill; a bottom-up model can be built separately once real usage data exists.</p>
+          <h3>Top-down by choice, not by limitation</h3>
+          <p>A bottom-up build &mdash; <code>requests/day &times; tokens/call &times; input:output split &times; model rate</code> &mdash; is the right model once you have real telemetry. It's avoided by default because it multiplies four guesses into a number with more decimal places and less truth than what's already on your bill. This tool goes top-down instead, so the result can always be checked against that bill; a bottom-up model can be built separately once real usage data exists.</p>
 
-          <p><strong>The inference band is wider than the stack band, on purpose.</strong> Consolidation figures sit at <code>&plusmn;12&ndash;15%</code>, calibrated against real benchmarks. Hit-rate uncertainty is much bigger than pricing uncertainty, so the inference range comes from each archetype's own hit-rate band instead: <code>7&ndash;18%</code> with no archetype picked, <code>25&ndash;42%</code> for FAQ, <code>2&ndash;7%</code> for open-ended chat.</p>
+          <h3>The inference band is wider than the stack band, on purpose</h3>
+          <p>Consolidation figures sit at <code>&plusmn;12&ndash;15%</code>, calibrated against real benchmarks. Hit-rate uncertainty is much bigger than pricing uncertainty, so the inference range comes from each archetype's own hit-rate band instead: <code>7&ndash;18%</code> with no archetype picked, <code>25&ndash;42%</code> for FAQ, <code>2&ndash;7%</code> for open-ended chat.</p>
 
-          <p><strong>What the inference figures are not.</strong> Addressable share and hit rate are modeling assumptions &mdash; no published Couchbase caching benchmark backs them. Accuracy benchmarks like LoCoMo and LongMemEval measure retrieval quality, not cost reduction, so they're deliberately not cited here as savings evidence.</p>
+          <h3>What the inference figures are not</h3>
+          <p>Addressable share and hit rate are modeling assumptions &mdash; no published Couchbase caching benchmark backs them. Accuracy benchmarks like LoCoMo and LongMemEval measure retrieval quality, not cost reduction, so they're deliberately not cited here as savings evidence.</p>
 
-          <p><strong>Watch the double-count on vector search.</strong> Deselecting a vector database already removes its cost from the stack total above &mdash; the inference card is model-provider spend only; the two don't overlap. Know which line a saving belongs to before it goes into a business case.</p>
+          <h3>Watch the double-count on vector search</h3>
+          <p>Deselecting a vector database already removes its cost from the stack total above &mdash; the inference card is model-provider spend only; the two don't overlap. Know which line a saving belongs to before it goes into a business case.</p>
         </div>
       </details>
 
