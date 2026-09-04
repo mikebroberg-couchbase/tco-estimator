@@ -312,6 +312,45 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
   .tco-tip-bubble { left: auto; right: -0.5rem; transform: none; }
   .tco-tip-bubble::after { left: auto; right: 0.7rem; transform: none; }
 }
+
+/* ===== FAQ module ===== */
+.faq-section { margin-top: 2rem; }
+.faq-section h2 { font-size: 1.15rem; }
+.faq-section .subhead { font-size: 0.9rem; margin-bottom: 1rem; }
+.faq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 0.75rem; align-items: start; }
+.faq-item {
+  background: var(--ink);
+  border-radius: 1rem;
+  padding: 1rem 1.1rem;
+  color: #fff;
+}
+.faq-item summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 750;
+  font-size: 0.92rem;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: "+";
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.faq-item[open] summary::after { content: "\2013"; }
+.faq-item[open] summary { margin-bottom: 0.6rem; }
+.faq-item p { margin: 0; color: #d8dce2; font-size: 0.85rem; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -439,6 +478,33 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
       <div class="hero-card tco-hidden" id="demoCTA" style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
         <p style="max-width:26rem; margin:0;"><strong style="color:#fff;">Want to run these numbers against your specific configurations?</strong><br>A Couchbase architect will size caching, memory, and retrieval against your workload in a 30-minute session.</p>
         <a href="https://www.couchbase.com/get-a-demo/" target="_blank" rel="noopener"><button type="button" class="tco-invert-btn">Book a Meeting</button></a>
+      </div>
+
+      <div class="faq-section">
+        <h2>Database Consolidation Calculator FAQ</h2>
+        <p class="subhead">Here are answers to the most common questions about how the calculator works, where the numbers come from, and what to do with the results.</p>
+        <div class="faq-grid">
+          <details class="faq-item">
+            <summary>How does the consolidation calculator work?</summary>
+            <p>Select the databases you run today and your throughput level. The calculator estimates your current annual costs versus one consolidated Couchbase platform and shows a directional savings range.</p>
+          </details>
+          <details class="faq-item">
+            <summary>How accurate are the cost estimates?</summary>
+            <p>Every default is sourced to public list pricing or the vendor's own benchmarks. Unlock Step 3 to enter your negotiated rates for a tighter number. Figures are directional, not a quote.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Do I need to share my email to use the calculator?</summary>
+            <p>No. You can run the full estimate without entering your email. Contact information is only requested if you want to save a PDF or book a meeting with a Couchbase architect.</p>
+          </details>
+          <details class="faq-item">
+            <summary>What databases can I compare in the calculator?</summary>
+            <p>The calculator covers MongoDB, Redis, Elasticsearch, DynamoDB, Postgres, Oracle, SQL Server, Firestore, Ditto, AlloyDB, Pinecone, and Memcached across document, cache, SQL, vector, and search.</p>
+          </details>
+          <details class="faq-item">
+            <summary>What is database consolidation?</summary>
+            <p>Database consolidation replaces multiple databases with one multi-model platform, reducing infrastructure cost, engineering overhead, and the complexity of keeping multiple systems in sync.</p>
+          </details>
+        </div>
       </div>
 
       <details class="advanced" style="margin-top:2rem;">
