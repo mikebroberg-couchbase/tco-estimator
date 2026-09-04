@@ -389,7 +389,6 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
       <div class="panel" id="gatePrompt">
         <div class="button-row" style="margin:0;">
           <button type="button" id="unlockBtn">Unlock advanced inputs &rarr;</button>
-          <button type="button" id="devUnlockBtn" class="tco-ghost-btn">skip form (testing/demo)</button>
         </div>
       </div>
 
@@ -863,7 +862,6 @@ document.getElementById('unlockBtn').addEventListener('click', () => {
   document.getElementById('leadForm').classList.remove('tco-hidden');
 });
 document.getElementById('leadForm').addEventListener('submit', (e) => { e.preventDefault(); doUnlock(); });
-document.getElementById('devUnlockBtn').addEventListener('click', doUnlock);
 if (new URLSearchParams(window.location.search).get('unlock') === '1') { doUnlock(); }
 
 document.getElementById('llmSpendMonthly').addEventListener('input', (e) => {
