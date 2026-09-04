@@ -320,7 +320,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
   <div class="hero">
     <div class="brand-row">
       <div class="logo-mark"></div>
-      Couchbase <span style="color:var(--muted); font-weight:600;">&middot; TCO Estimator (simplified POC)</span>
+      Couchbase<sup style="font-size:0.6em;">®</sup> <span style="color:var(--muted); font-weight:600;">&middot; TCO Estimator (simplified POC)</span>
     </div>
     <div class="hero-grid">
       <div>
@@ -454,7 +454,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
         <summary>Disclaimer</summary>
         <div class="input-stack" style="margin-top:0.9rem; font-size:0.88rem; color:var(--ink); display:block;">
           <p><strong>Disclaimer.</strong> This tool provides directional, illustrative estimates only and is not a quote, offer, or guarantee of savings, pricing, or performance. It is intended to support internal evaluation and discovery conversations, not as the sole basis for a purchasing decision.</p>
-          <p>Figures shown for products other than Couchbase are estimates based on publicly available pricing, documentation, and benchmarks as of the date noted for each source, using assumptions about workload size, traffic patterns, and configuration that we have disclosed within this tool. Third-party pricing changes without notice; always confirm current pricing directly with the vendor before making a decision. Couchbase is not affiliated with, and this tool is not endorsed by, any third-party company referenced here. All third-party product and company names are trademarks of their respective owners.</p>
+          <p>Figures shown for products other than Couchbase are estimates based on publicly available pricing, documentation, and benchmarks as of September 2026, using assumptions about workload size, traffic patterns, and configuration that we have disclosed within this tool. Third-party pricing changes without notice; always confirm current pricing directly with the vendor before making a decision. Couchbase is not affiliated with, and this tool is not endorsed by, any third-party company referenced here. All third-party product and company names are trademarks of their respective owners.</p>
           <p>Actual costs for any product, including Couchbase, will vary based on your specific configuration, negotiated rates, usage patterns, and support terms, and may differ materially from the estimates shown. This tool does not constitute financial, legal, procurement, or professional advice. Couchbase makes no warranty, express or implied, as to the accuracy or completeness of the information provided and disclaims liability for decisions made in reliance on it.</p>
         </div>
       </details>
@@ -500,24 +500,45 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
     </aside>
   </div>
 
-  <footer>Couchbase TCO Console &mdash; internal proof of concept. Figures are estimates for discussion purposes and are not a binding quote.</footer>
+  <footer>
+    Couchbase TCO Console &mdash; internal proof of concept. Figures are estimates for discussion purposes and are not a binding quote.
+    <p style="font-size:0.72rem; color:var(--muted); line-height:1.5; margin-top:0.75rem;">
+      Oracle® is a registered trademark of Oracle and/or its affiliates. MongoDB® is a registered trademark of MongoDB, Inc.
+      Redis® is a registered trademark of Redis Ltd. Elasticsearch® is a registered trademark of Elasticsearch B.V.
+      Microsoft® and SQL Server® are registered trademarks of Microsoft Corporation. PostgreSQL® is a registered trademark
+      of the PostgreSQL Global Development Group. Amazon DynamoDB® is a registered trademark of Amazon.com, Inc. or its
+      affiliates. Ditto® is a registered trademark of DittoLive Incorporated. Google Cloud™, Firebase™, Google Firestore™,
+      and AlloyDB™ are trademarks of Google LLC. Couchbase® is a registered trademark of Couchbase, Inc. All other trademarks
+      are the property of their respective owners. Use of these marks does not imply any sponsorship, endorsement, or
+      affiliation between Couchbase and the respective trademark owners.
+    </p>
+  </footer>
 
 <script>
 const COMPETITORS = [
-  {id:'firebase',   name:'Firebase',    cat:'Mobile', unitCost:18.90, blurb:'Google’s mobile / realtime backend, billed on reads, writes & storage.', source:'List price: Google Firestore, $0.30/M reads + $0.90/M writes, blended 50/50 and annualized. <a href="https://cloud.google.com/firestore/pricing" target="_blank" rel="noopener">cloud.google.com/firestore/pricing</a>'},
-  {id:'ditto',      name:'Ditto', cat:'Mobile', unitCost:25, blurb:'Peer-to-peer edge sync for offline-first mobile apps.', source:'Ditto does not publish list pricing (quote-based). Figure is an unverified planning estimate.'},
-  {id:'mongodb',    name:'MongoDB (Atlas Dedicated)', cat:'JSON / Document', unitCost:2.96, blurb:'Document database — Atlas Dedicated list pricing.', source:'List price: Atlas Dedicated M30 tier, $0.54/hr, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">mongodb.com/pricing</a>. For workloads under 500 ops/sec, MongoDB’s Flex tier runs cheaper — $0.72/ops-sec/yr.'},
-  {id:'dynamodb',   name:'DynamoDB',    cat:'JSON / Document', unitCost:11.81, blurb:'AWS managed key-value / document store.', source:'List price: AWS on-demand rate, $0.125/M reads + $0.625/M writes, blended 50/50 and annualized. <a href="https://aws.amazon.com/dynamodb/pricing" target="_blank" rel="noopener">aws.amazon.com/dynamodb/pricing</a>'},
-  {id:'redis',      name:'Redis',       cat:'Cache',  unitCost:0.48, blurb:'In-memory cache / store.', source:'Redis Cloud Pro, at a representative 5,000 ops/sec, subject to a $200/month minimum. Effective rate stays within $0.38–$0.48 across most realistic throughput levels. <a href="https://redis.io/pricing/" target="_blank" rel="noopener">redis.io/pricing</a>'},
-  {id:'memcached',  name:'Memcached',   cat:'Cache',  unitCost:0.33, blurb:'Open-source cache; cost reflects hosting only, not license.', source:'AWS ElastiCache Serverless, at a representative 5,000 ops/sec. A $1,095/year minimum storage fee means this rate is not flat — it runs higher at low throughput ($11), lower at high throughput ($0.13). <a href="https://aws.amazon.com/elasticache/pricing/" target="_blank" rel="noopener">aws.amazon.com/elasticache/pricing</a>'},
-  {id:'oracle',     name:'Oracle',      cat:'SQL',    unitCost:30, blurb:'Enterprise RDBMS — list pricing plus support.', source:'$47.5K/processor list + 22%/yr support, amortized, ÷ an assumed sustained-throughput-per-processor. <a href="https://www.oracle.com/database/pricing/" target="_blank" rel="noopener">oracle.com/database/pricing</a>'},
-  {id:'sqlserver',  name:'SQL Server',  cat:'SQL',    unitCost:4.25, blurb:'Microsoft RDBMS — Enterprise Edition list pricing.', source:'SQL Server 2022 Enterprise, perpetual license, $7,561.50/core + ~25%/yr Software Assurance, amortized over 5 years, assuming ~800 sustained ops/sec per core. Priced for 2022 (2025 edition pricing not yet public). <a href="https://www.microsoft.com/en-us/sql-server/sql-server-2022-pricing" target="_blank" rel="noopener">microsoft.com/sql-server/pricing</a>'},
-  {id:'postgres',   name:'Postgres',    cat:'SQL',    unitCost:0.96, blurb:'Open-source RDBMS; cost reflects managed hosting, not license.', source:'AWS RDS for PostgreSQL, db.m6g.large On-Demand, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://aws.amazon.com/rds/postgresql/pricing/" target="_blank" rel="noopener">aws.amazon.com/rds/postgresql/pricing</a>'},
-  {id:'mongovector',name:'MongoDB (Vector, Scalar Quantization)', cat:'Vector Search', unitCost:78, blurb:'Vector search add-on on MongoDB Atlas.', source:'MongoDB’s own published Vector Search benchmark, at a realistic 15.3M-vector scale, scalar quantization: dedicated Search Nodes, $1.04/hr for 2 nodes, 116.8 QPS. <a href="https://www.mongodb.com/docs/vector-search/benchmark/overview/" target="_blank" rel="noopener">mongodb.com/docs/vector-search/benchmark/overview</a> &middot; <a href="https://www.mongodb.com/docs/vector-search/benchmark/results/" target="_blank" rel="noopener">results</a>'},
-  {id:'alloydb',    name:'AlloyDB',     cat:'Vector Search', unitCost:13, blurb:'Google Cloud’s Postgres-compatible database with vector support.', source:'Empirical: head-to-head Couchbase-vs-AlloyDB vector search benchmark on matched hardware (100M vectors, 768-dim and 128-dim), using AlloyDB’s ScaNN index — Google’s recommended, best-performing configuration at this scale (not stock pgvector). Consistent across both datasets.'},
-  {id:'pinecone',   name:'Pinecone',    cat:'Vector Search', unitCost:198, blurb:'Serverless vector database, billed on read/write units + storage.', source:'Dedicated Read Nodes (Pinecone’s tier for sustained, high-QPS workloads): T1 node, $969/month (AWS us-east-1, Standard), sized to Pinecone’s own published customer benchmark (200–270 QPS, 14M vectors, 4 replicas). For bursty/unpredictable traffic, Pinecone’s pay-per-request tier runs closer to $2,000/ops-sec/yr instead. <a href="https://docs.pinecone.io/guides/manage-cost/understanding-cost" target="_blank" rel="noopener">docs.pinecone.io/guides/manage-cost/understanding-cost</a>'},
-  {id:'elasticsearch', name:'Elasticsearch', cat:'Full Text Search', unitCost:2, blurb:'Distributed full-text search & analytics engine.', source:'List price: Elastic Cloud Serverless, $0.09/VCU-hr search + $0.14/VCU-hr ingest (official rate), blended 70/30 search-weighted, ÷ an assumed ~500 sustained ops/sec per VCU (our sizing assumption). <a href="https://checkthat.ai/brands/elastic/pricing" target="_blank" rel="noopener">Elastic Serverless pricing summary</a>'},
+  {id:'firebase',   name:'Firebase',    trademarkSymbol:'™', cat:'Mobile', unitCost:18.90, blurb:'Google’s mobile / realtime backend, billed on reads, writes & storage.', source:'List price: Google Firestore, $0.30/M reads + $0.90/M writes, blended 50/50 and annualized. <a href="https://cloud.google.com/firestore/pricing" target="_blank" rel="noopener">cloud.google.com/firestore/pricing</a>'},
+  {id:'ditto',      name:'Ditto', trademarkSymbol:'®', cat:'Mobile', unitCost:25, blurb:'Peer-to-peer edge sync for offline-first mobile apps.', source:'Ditto does not publish list pricing (quote-based). Figure is an unverified planning estimate.'},
+  {id:'mongodb',    name:'MongoDB (Atlas Dedicated)', trademarkSymbol:'®', cat:'JSON / Document', unitCost:2.96, blurb:'Document database — Atlas Dedicated list pricing.', source:'List price: Atlas Dedicated M30 tier, $0.54/hr, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">mongodb.com/pricing</a>. For workloads under 500 ops/sec, MongoDB’s Flex tier runs cheaper — $0.72/ops-sec/yr.'},
+  {id:'dynamodb',   name:'DynamoDB',    trademarkSymbol:'®', cat:'JSON / Document', unitCost:11.81, blurb:'AWS managed key-value / document store.', source:'List price: AWS on-demand rate, $0.125/M reads + $0.625/M writes, blended 50/50 and annualized. <a href="https://aws.amazon.com/dynamodb/pricing" target="_blank" rel="noopener">aws.amazon.com/dynamodb/pricing</a>'},
+  {id:'redis',      name:'Redis',       trademarkSymbol:'®', cat:'Cache',  unitCost:0.48, blurb:'In-memory cache / store.', source:'Redis Cloud Pro, at a representative 5,000 ops/sec, subject to a $200/month minimum. Effective rate stays within $0.38–$0.48 across most realistic throughput levels. <a href="https://redis.io/pricing/" target="_blank" rel="noopener">redis.io/pricing</a>'},
+  {id:'memcached',  name:'Memcached',   trademarkSymbol:null, cat:'Cache',  unitCost:0.33, blurb:'Open-source cache; cost reflects hosting only, not license.', source:'AWS ElastiCache Serverless, at a representative 5,000 ops/sec. A $1,095/year minimum storage fee means this rate is not flat — it runs higher at low throughput ($11), lower at high throughput ($0.13). <a href="https://aws.amazon.com/elasticache/pricing/" target="_blank" rel="noopener">aws.amazon.com/elasticache/pricing</a>'},
+  {id:'oracle',     name:'Oracle',      trademarkSymbol:'®', cat:'SQL',    unitCost:30, blurb:'Enterprise RDBMS — list pricing plus support.', source:'$47.5K/processor list + 22%/yr support, amortized, ÷ an assumed sustained-throughput-per-processor. <a href="https://www.oracle.com/database/pricing/" target="_blank" rel="noopener">oracle.com/database/pricing</a>'},
+  {id:'sqlserver',  name:'SQL Server',  trademarkSymbol:'®', cat:'SQL',    unitCost:4.25, blurb:'Microsoft RDBMS — Enterprise Edition list pricing.', source:'SQL Server 2022 Enterprise, perpetual license, $7,561.50/core + ~25%/yr Software Assurance, amortized over 5 years, assuming ~800 sustained ops/sec per core. Priced for 2022 (2025 edition pricing not yet public). <a href="https://www.microsoft.com/en-us/sql-server/sql-server-2022-pricing" target="_blank" rel="noopener">microsoft.com/sql-server/pricing</a>'},
+  {id:'postgres',   name:'PostgreSQL',  trademarkSymbol:'®', cat:'SQL',    unitCost:0.96, blurb:'Open-source RDBMS; cost reflects managed hosting, not license.', source:'AWS RDS for PostgreSQL, db.m6g.large On-Demand, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://aws.amazon.com/rds/postgresql/pricing/" target="_blank" rel="noopener">aws.amazon.com/rds/postgresql/pricing</a>'},
+  {id:'mongovector',name:'MongoDB (Vector, Scalar Quantization)', trademarkSymbol:'®', cat:'Vector Search', unitCost:78, blurb:'Vector search add-on on MongoDB Atlas.', source:'MongoDB’s own published Vector Search benchmark, at a realistic 15.3M-vector scale, scalar quantization: dedicated Search Nodes, $1.04/hr for 2 nodes, 116.8 QPS. <a href="https://www.mongodb.com/docs/vector-search/benchmark/overview/" target="_blank" rel="noopener">mongodb.com/docs/vector-search/benchmark/overview</a> &middot; <a href="https://www.mongodb.com/docs/vector-search/benchmark/results/" target="_blank" rel="noopener">results</a>'},
+  {id:'alloydb',    name:'AlloyDB',     trademarkSymbol:'™', cat:'Vector Search', unitCost:13, blurb:'Google Cloud’s Postgres-compatible database with vector support.', source:'Empirical: head-to-head Couchbase-vs-AlloyDB vector search benchmark on matched hardware (100M vectors, 768-dim and 128-dim), using AlloyDB’s ScaNN index — Google’s recommended, best-performing configuration at this scale (not stock pgvector). Consistent across both datasets.'},
+  {id:'pinecone',   name:'Pinecone',    trademarkSymbol:null, cat:'Vector Search', unitCost:198, blurb:'Serverless vector database, billed on read/write units + storage.', source:'Dedicated Read Nodes (Pinecone’s tier for sustained, high-QPS workloads): T1 node, $969/month (AWS us-east-1, Standard), sized to Pinecone’s own published customer benchmark (200–270 QPS, 14M vectors, 4 replicas). For bursty/unpredictable traffic, Pinecone’s pay-per-request tier runs closer to $2,000/ops-sec/yr instead. <a href="https://docs.pinecone.io/guides/manage-cost/understanding-cost" target="_blank" rel="noopener">docs.pinecone.io/guides/manage-cost/understanding-cost</a>'},
+  {id:'elasticsearch', name:'Elasticsearch', trademarkSymbol:'®', cat:'Full Text Search', unitCost:2, blurb:'Distributed full-text search & analytics engine.', source:'List price: Elastic Cloud Serverless, $0.09/VCU-hr search + $0.14/VCU-hr ingest (official rate), blended 70/30 search-weighted, ÷ an assumed ~500 sustained ops/sec per VCU (our sizing assumption). <a href="https://checkthat.ai/brands/elastic/pricing" target="_blank" rel="noopener">Elastic Serverless pricing summary</a>'},
 ];
+
+/* Renders a tool's name with its trademark symbol as a small superscript --
+   used only at the tool's first/most prominent mention (its selection card),
+   per standard trademark practice: mark once per page, not every occurrence. */
+function renderToolName(tool) {
+  return tool.trademarkSymbol
+    ? `${tool.name}<sup style="font-size:0.6em;">${tool.trademarkSymbol}</sup>`
+    : tool.name;
+}
 const CATEGORY_ORDER = ['Mobile','JSON / Document','Cache','SQL','Vector Search','Full Text Search'];
 
 /* ===== Inference (token) savings module =====
@@ -599,7 +620,7 @@ function buildToolGroups(){
       <label class="check-card" data-id="${c.id}">
         <input type="checkbox" id="chk-${c.id}">
         <span style="display:block;">
-          <span>${c.name}<span class="tco-tip" tabindex="0">&#9432;<span class="tco-tip-bubble">
+          <span>${renderToolName(c)}<span class="tco-tip" tabindex="0">&#9432;<span class="tco-tip-bubble">
             <span class="tco-tip-figure">${fmtUSD(c.unitCost)} / ops-sec / yr</span>
             <span class="tco-tip-source">${c.source}</span>
           </span></span></span>
