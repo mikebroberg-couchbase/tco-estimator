@@ -405,7 +405,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
         </div>
         <div class="field-controls">
           <input type="range" id="opsSlider" min="100" max="200000" step="100" value="10000">
-          <input type="number" id="opsInput" min="1" value="10000">
+          <input type="number" id="opsInput" min="1" max="200000" value="10000">
         </div>
       </div>
       <div class="button-row">
@@ -610,7 +610,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
 const COMPETITORS = [
   {id:'firebase',   name:'Firestore',    trademarkSymbol:'™', cat:'Mobile', unitCost:18.90, blurb:'Google Cloud’s fully managed NoSQL document database.', source:'List price: Google Firestore, $0.30/M reads + $0.90/M writes, blended 50/50 and annualized. <a href="https://cloud.google.com/firestore/pricing" target="_blank" rel="noopener">cloud.google.com/firestore/pricing</a>'},
   {id:'ditto',      name:'Ditto', trademarkSymbol:'®', cat:'Mobile', unitCost:25, blurb:'Peer-to-peer edge sync for offline-first mobile apps.', source:'Ditto does not publish list pricing (quote-based). Figure is an unverified planning estimate.'},
-  {id:'mongodb',    name:'MongoDB (Atlas Dedicated)', trademarkSymbol:'®', cat:'JSON / Document', unitCost:2.96, blurb:'Document database — Atlas Dedicated list pricing.', source:'List price: Atlas Dedicated M30 tier, $0.54/hr, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">mongodb.com/pricing</a>. For workloads under 500 ops/sec, MongoDB’s Flex tier runs cheaper — $0.72/ops-sec/yr.'},
+  {id:'mongodb',    name:'MongoDB (Atlas Dedicated)', trademarkSymbol:'®', cat:'JSON / Document', unitCost:2.96, blurb:'Document database — Atlas Dedicated list pricing.', source:'List price: Atlas Dedicated M30 tier, $0.54/hr, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">mongodb.com/pricing</a>. For workloads under 500 ops/sec, MongoDB’s Flex tier runs cheaper — $0.72/ops-sec/yr. Reflects free Basic support (MongoDB’s default); Couchbase’s figure includes Capella’s Enterprise support plan. MongoDB’s cost for a comparable support tier is not publicly published.'},
   {id:'dynamodb',   name:'DynamoDB',    trademarkSymbol:'®', cat:'JSON / Document', unitCost:11.81, blurb:'AWS managed key-value / document store.', source:'List price: AWS on-demand rate, $0.125/M reads + $0.625/M writes, blended 50/50 and annualized. <a href="https://aws.amazon.com/dynamodb/pricing" target="_blank" rel="noopener">aws.amazon.com/dynamodb/pricing</a>'},
   {id:'redis',      name:'Redis',       trademarkSymbol:'®', cat:'Cache',  unitCost:0.48, blurb:'In-memory cache / store.', source:'Redis Cloud Pro, at a representative 5,000 ops/sec, subject to a $200/month minimum. Effective rate stays within $0.38–$0.48 across most realistic throughput levels. <a href="https://redis.io/pricing/" target="_blank" rel="noopener">redis.io/pricing</a>'},
   {id:'memcached',  name:'Memcached',   trademarkSymbol:null, cat:'Cache',  unitCost:0.33, blurb:'Open-source cache; cost reflects hosting only, not license.', source:'AWS ElastiCache Serverless, at a representative 5,000 ops/sec. A $1,095/year minimum storage fee means this rate is not flat — it runs higher at low throughput ($11), lower at high throughput ($0.13). <a href="https://aws.amazon.com/elasticache/pricing/" target="_blank" rel="noopener">aws.amazon.com/elasticache/pricing</a>'},
@@ -780,7 +780,7 @@ function compute(){
     const unit = unitCostFor(c);
     const infra = unit * state.ops;
     infraTotal += infra;
-    return {name:c.name, infra};
+    return {id:c.id, name:c.name, infra};
   });
 
   const totalLaborCost = competitorStackLaborCost(n, state.ops, state.engineerCost);
@@ -879,7 +879,13 @@ function render(){
   if(r.n === 0){
     bt.innerHTML = `<tr><td colspan="2">Select tools to see the breakdown.</td></tr>`;
   } else {
-    let html = r.rows.map(row => `<tr><td>${row.name} (current, infra)</td><td>${fmtUSD(row.infra)}/yr</td></tr>`).join('');
+    let html = r.rows.map(row => {
+      let rowHtml = `<tr><td>${row.name} (current, infra)</td><td>${fmtUSD(row.infra)}/yr</td></tr>`;
+      if (row.id === 'mongodb') {
+        rowHtml += `<tr><td colspan="2"><span class="tco-breakdown-note">Reflects free Basic support (MongoDB's default); Couchbase's figure includes Capella's Enterprise support plan. MongoDB's cost for a comparable support tier is not publicly published.</span></td></tr>`;
+      }
+      return rowHtml;
+    }).join('');
     html += `<tr><td>Team &amp; integration overhead (${r.n} tool${r.n === 1 ? '' : 's'})</td><td>${fmtUSD(r.totalLaborCost)}/yr</td></tr>`;
     html += `<tr><td><strong>Current stack total</strong></td><td><strong>${fmtUSD(r.currentTotal)}/yr</strong></td></tr>`;
     html += `<tr><td>Couchbase (Capella Enterprise) &mdash; infra</td><td>${fmtUSD(r.cbInfra)}/yr</td></tr>`;
@@ -920,9 +926,9 @@ function renderInference(inf){
 }
 
 function setOps(v){
-  v = Math.max(1, Math.round(v));
+  v = Math.min(200000, Math.max(1, Math.round(v)));
   state.ops = v;
-  document.getElementById('opsSlider').value = Math.min(200000, v);
+  document.getElementById('opsSlider').value = v;
   document.getElementById('opsInput').value = v;
   render();
 }
