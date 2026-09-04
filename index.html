@@ -516,7 +516,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
 
 <script>
 const COMPETITORS = [
-  {id:'firebase',   name:'Firebase',    trademarkSymbol:'™', cat:'Mobile', unitCost:18.90, blurb:'Google’s mobile / realtime backend, billed on reads, writes & storage.', source:'List price: Google Firestore, $0.30/M reads + $0.90/M writes, blended 50/50 and annualized. <a href="https://cloud.google.com/firestore/pricing" target="_blank" rel="noopener">cloud.google.com/firestore/pricing</a>'},
+  {id:'firebase',   name:'Firestore',    trademarkSymbol:'™', cat:'Mobile', unitCost:18.90, blurb:'Google’s mobile / realtime backend, billed on reads, writes & storage.', source:'List price: Google Firestore, $0.30/M reads + $0.90/M writes, blended 50/50 and annualized. <a href="https://cloud.google.com/firestore/pricing" target="_blank" rel="noopener">cloud.google.com/firestore/pricing</a>'},
   {id:'ditto',      name:'Ditto', trademarkSymbol:'®', cat:'Mobile', unitCost:25, blurb:'Peer-to-peer edge sync for offline-first mobile apps.', source:'Ditto does not publish list pricing (quote-based). Figure is an unverified planning estimate.'},
   {id:'mongodb',    name:'MongoDB (Atlas Dedicated)', trademarkSymbol:'®', cat:'JSON / Document', unitCost:2.96, blurb:'Document database — Atlas Dedicated list pricing.', source:'List price: Atlas Dedicated M30 tier, $0.54/hr, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">mongodb.com/pricing</a>. For workloads under 500 ops/sec, MongoDB’s Flex tier runs cheaper — $0.72/ops-sec/yr.'},
   {id:'dynamodb',   name:'DynamoDB',    trademarkSymbol:'®', cat:'JSON / Document', unitCost:11.81, blurb:'AWS managed key-value / document store.', source:'List price: AWS on-demand rate, $0.125/M reads + $0.625/M writes, blended 50/50 and annualized. <a href="https://aws.amazon.com/dynamodb/pricing" target="_blank" rel="noopener">aws.amazon.com/dynamodb/pricing</a>'},
@@ -611,6 +611,13 @@ function couchbaseLaborCost(ops, engineerCost) {
 }
 
 function fmtUSD(n){ return n.toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}); }
+// Whole-dollar rounding hides sub-$1 unit-cost tooltips (e.g. Redis $0.48, Memcached $0.33 both round to $0).
+// Show cents below $1 instead so the figure stays legible.
+function fmtUnitCost(n){
+  return n < 1 && n > 0
+    ? n.toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2})
+    : fmtUSD(n);
+}
 
 function buildToolGroups(){
   const wrap = document.getElementById('toolGroups');
@@ -621,7 +628,7 @@ function buildToolGroups(){
         <input type="checkbox" id="chk-${c.id}">
         <span style="display:block;">
           <span>${renderToolName(c)}<span class="tco-tip" tabindex="0">&#9432;<span class="tco-tip-bubble">
-            <span class="tco-tip-figure">${fmtUSD(c.unitCost)} / ops-sec / yr</span>
+            <span class="tco-tip-figure">${fmtUnitCost(c.unitCost)} / ops-sec / yr</span>
             <span class="tco-tip-source">${c.source}</span>
           </span></span></span>
           <small>${c.blurb}</small>
