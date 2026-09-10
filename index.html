@@ -379,10 +379,10 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
       </div>
     </div>
 
-    <div class="panel" style="margin: 1.5rem clamp(1rem, 4vw, 4rem) 0; padding: clamp(1rem, 2.2vw, 1.6rem);">
+    <div class="panel" style="margin: 1.5rem clamp(1rem, 4vw, 4rem) 0; padding: clamp(1rem, 2.2vw, 1.6rem); max-width: 52rem;">
       <h2 style="font-size:1.1rem;">How this calculator works</h2>
-      <p class="subhead" style="font-size:0.95rem; margin-bottom:0.8rem;">This tool estimates what it costs to run multiple separate databases, caches, and search engines side by side, versus consolidating them onto one Couchbase Capella platform. Select the tools you use today, enter your traffic level, and see infrastructure and team-overhead costs compared directly, with every assumption shown.</p>
-      <p class="subhead" style="font-size:0.95rem;">Nearly every vendor default in this calculator is sourced to that vendor's own public pricing page or a benchmark &mdash; not an internal guess at what a competitor should cost. (The exception is Ditto, which doesn't disclose public pricing.) Where a number depends on an assumption we made ourselves, like how much traffic a rented server can handle, that's disclosed in the tooltips. Full sourcing and formulas are in "Methodology &amp; validation notes" below.</p>
+      <p class="subhead" style="font-size:0.95rem; margin-bottom:0.8rem;">This tool estimates the costs to run multiple separate databases, caches, and search engines side by side, versus consolidating them onto one Couchbase Capella platform. Select the tools you use today, enter your traffic level, and see infrastructure and team-overhead costs compared directly, with every assumption shown.</p>
+      <p class="subhead" style="font-size:0.95rem;">Nearly every vendor default in this calculator is sourced to that vendor's own public pricing page or a benchmark &mdash; not an internal guess at what a competitor should cost. (The exception is Ditto, which doesn't disclose public pricing.) Premium support is also priced differently across vendors. See "Methodology &amp; validation notes" below for exactly how &mdash; including the formulas behind every number on this page.</p>
     </div>
   </div>
 
@@ -390,7 +390,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
     <main>
       <p class="eyebrow">Consolidation Estimator</p>
       <h2>See what sprawl is costing you</h2>
-      <p class="subhead" style="font-size:0.95rem; margin-bottom:1.5rem;">Select the tools you're running today. We'll break down the technology and the people it takes to run them &mdash; side by side with one consolidated Couchbase platform.</p>
+      <p class="subhead" style="font-size:0.95rem; margin-bottom:1.5rem;">Select the tools you're running today. We'll break down the technology and the people it takes to run them &mdash; side by side with Couchbase Capella Enterprise.</p>
 
       <p class="eyebrow">Step 1</p>
       <h2>Current tools</h2>
@@ -450,9 +450,14 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <h3 style="margin-bottom:0.4rem;">Cost basis by tool</h3>
           <p class="subhead" style="font-size:0.85rem; margin-bottom:0.8rem;">Defaults use each vendor's own public pricing or published benchmark, per unit of throughput, per year. Adjust to your actual negotiated rates for a more precise number.</p>
           <div class="input-stack" id="costFields"></div>
+
+          <h3 style="margin:1.2rem 0 0.4rem;">Support plan (% of spend)</h3>
+          <p class="subhead" style="font-size:0.85rem; margin-bottom:0.8rem;">Whether premium support is already included varies by vendor — check each tool's badge or tooltip. Add it here as a % of that vendor's spend where it isn't already included.</p>
+          <div class="input-stack" id="supportFields"></div>
+
           <div class="input-stack" style="margin-top:0.9rem;">
             <div class="field">
-              <div><label>Couchbase (Capella Enterprise)</label><p>$ / ops-sec / yr</p></div>
+              <div><label>Couchbase (Capella Enterprise)</label><p>$ / ops-sec / yr <span style="color:var(--muted);">(support included)</span></p></div>
               <input type="number" id="cbUnitCost" value="1.57" step="0.01">
             </div>
           </div>
@@ -482,7 +487,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           </details>
           <details class="faq-item">
             <summary>How accurate are the cost estimates?</summary>
-            <p>Nearly every default is sourced to public pricing or vendor benchmarks &mdash; except Ditto, which doesn't publish pricing. Unlock Step 3 for your own rates. Not a quote.</p>
+            <p>Nearly every default is sourced to public pricing or vendor benchmarks, except Ditto (no public pricing). Support-plan inclusion varies by vendor — see each tool's badge, and adjust in Step 3. Not a quote.</p>
           </details>
           <details class="faq-item">
             <summary>Do I need to share my email to use the calculator?</summary>
@@ -515,13 +520,16 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <p><code>Reduction = 1 &minus; (1 &divide; N systems selected)</code>. One tool = a straight swap, correctly 0%; more consolidated tools raise it (2&rarr;50%, 3&rarr;67%, 5&rarr;80%). Directional &mdash; makes the qualitative case (less duplication, smaller footprint, fewer integration points), not a formal risk score.</p>
 
           <h3>Why team overhead scales with how much you consolidate</h3>
-          <p>One more database doesn't need a whole extra admin &mdash; teams share tooling across systems they already run. But each extra <em>disparate</em> system adds real integration work: more glue code, more places to keep data in sync. So admin overhead grows slower than 1-for-1 per tool added, integration burden grows faster &mdash; a single tool, nothing to integrate with, adds nothing there. Select just one tool and this shows zero assumed labor savings &mdash; no consolidation has happened, so any savings come from infrastructure pricing alone.</p>
+          <p><code>Team &amp; integration overhead = [0.35 &times; (tools selected)<sup>0.7</sup> + 0.25 &times; ((tools selected)<sup>1.5</sup> &minus; 1)] &times; (your traffic &divide; 5,000)<sup>0.2</sup> &times; engineer cost</code>. Couchbase's overhead uses the same formula simplified to <code>0.35 &times; (your traffic &divide; 5,000)<sup>0.2</sup> &times; engineer cost</code> &mdash; always treated as a single platform, no matter how many tools it replaces. Engineer cost defaults to $165,000/year (fully loaded) and is editable in Step 3; it applies identically to both sides of the comparison. One more database doesn't need a whole extra admin &mdash; teams share tooling across systems they already run &mdash; so the admin portion grows slower than 1-for-1 as you add tools. But each extra <em>disparate</em> system adds real integration work, so that portion grows faster than 1-for-1. At exactly one tool selected, both formulas produce the identical number: a straight swap shows zero assumed labor savings, because no consolidation has actually happened yet. Savings only grow as more tools are genuinely consolidated.</p>
 
           <h3>Ranges, not points</h3>
-          <p>Numbers show as a range (<code>&plusmn;12&ndash;15%</code>) since even a precise price gets multiplied by a modeled workload with real-world spikes a single figure can't capture. Unlock Step 3 to tighten it with your own contracts and traffic.</p>
+          <p><code>low estimate = value &times; 0.85</code>, <code>high estimate = value &times; 1.15</code> (roughly <code>&plusmn;12&ndash;15%</code>), applied because even a precise price gets multiplied by a modeled workload with real-world spikes a single figure can't capture. Unlock Step 3 to tighten it with your own contracts and traffic.</p>
 
           <h3>Reality check</h3>
           <p>Every default here traces to a vendor's own public price, published benchmark, or &mdash; for the few rows with none &mdash; a labeled estimate. Two things stay our own disclosed modeling choices: how much traffic a rented server can handle, and which pricing tier matches the steady production workload assumed here.</p>
+
+          <h3>Why some vendors show a support badge and others don't</h3>
+          <p><code>adjusted cost = base $/ops-sec/yr &times; (1 + support % &divide; 100)</code>. Premium support is priced differently across vendors. MongoDB, Redis, and Pinecone sell support separately, and none of the three publish a clean percentage &mdash; Step 3 lets you enter your own if you have a quote, defaulted to 0%. Elasticsearch publishes its support-tier percentage directly (Gold +5%, Platinum +10%, Enterprise +15%), so that's applied by default. Couchbase's own price already includes Enterprise-tier support, with no separate charge to add. MongoDB's two rows share one support field, since both run on the same Atlas account and would only be billed once in reality. A similar adjustment isn't offered for databases delivered through a hyperscale cloud platform &mdash; Amazon DynamoDB, Google Firestore, Amazon RDS for PostgreSQL, Amazon ElastiCache for Memcached, and Google AlloyDB. Support for these services is typically sold at the account level, spans dozens of unrelated products, and is shaped by enterprise discount agreements that vary widely by customer. Isolating one database's share of that arrangement would require assumptions too speculative to stand behind, so those rows reflect infrastructure pricing only.</p>
 
           <h3 style="margin-top:1.1rem;">Inference savings &mdash; a separate model</h3>
           <p><code>annual savings = annual model spend &times; addressable share &times; cache hit rate</code>, shown as a range. Reported as its own line, never added to the consolidation figure or its denominator &mdash; deliberately, since at mid-market spend, inference often costs more per year than the whole database stack, and blending the two would let an inference assumption swamp the result this tool is actually about.</p>
@@ -530,7 +538,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <p>Cache savings reduce to how often a request skips the model &mdash; a workload property, not a Couchbase one; a bounded FAQ bot and an open-ended agent differ by roughly 10x. That assumed value effectively is the output, so it's a visible, named range, not a buried constant.</p>
 
           <h3>Inference never reaches zero</h3>
-          <p>Cache misses still bill the provider &mdash; spend never reaches zero (see the residual line in the breakdown table).</p>
+          <p><code>residual spend = annual token budget &minus; savings</code>. Cache misses still bill the provider, so spend never reaches zero (see the residual line in the breakdown table).</p>
 
           <h3>Why the token budget is expressed in dollars</h3>
           <p>A raw token count needs an input/output split and a per-model rate to mean anything &mdash; two more numbers most people would have to guess, and the provider bill already nets both out. Taking the dollar total is one accurate number, in the same unit as the rest of this tool.</p>
@@ -544,7 +552,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <h3>What the inference figures are not</h3>
           <p>Addressable share and hit rate are modeling assumptions &mdash; no published Couchbase caching benchmark backs them. Accuracy benchmarks like LoCoMo and LongMemEval measure retrieval quality, not cost reduction, so they're deliberately not cited here as savings evidence.</p>
 
-          <h3>Watch the double-count on vector search</h3>
+          <h3>Vector database costs are counted once, not twice</h3>
           <p>Deselecting a vector database already removes its cost from the stack total above &mdash; the inference card is model-provider spend only; the two don't overlap. Know which line a saving belongs to before it goes into a business case.</p>
         </div>
       </details>
@@ -612,17 +620,17 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
 const COMPETITORS = [
   {id:'firebase',   name:'Firestore',    trademarkSymbol:'™', cat:'Mobile', unitCost:18.90, blurb:'Google Cloud’s fully managed NoSQL document database.', source:'List price: Google Firestore, $0.30/M reads + $0.90/M writes, blended 50/50 and annualized. <a href="https://cloud.google.com/firestore/pricing" target="_blank" rel="noopener">cloud.google.com/firestore/pricing</a>'},
   {id:'ditto',      name:'Ditto', trademarkSymbol:'®', cat:'Mobile', unitCost:25, blurb:'Peer-to-peer edge sync for offline-first mobile apps.', source:'Ditto does not publish list pricing (quote-based). Figure is an unverified planning estimate.'},
-  {id:'mongodb',    name:'MongoDB (Atlas Dedicated)', trademarkSymbol:'®', cat:'JSON / Document', unitCost:2.96, blurb:'Document database — Atlas Dedicated list pricing.', source:'List price: Atlas Dedicated M30 tier, $0.54/hr, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">mongodb.com/pricing</a>. For workloads under 500 ops/sec, MongoDB’s Flex tier runs cheaper — $0.72 / ops-sec / yr. Reflects free Basic support (MongoDB’s default); Couchbase’s figure includes Capella’s Enterprise support plan. MongoDB’s cost for a comparable support tier is not publicly published.'},
+  {id:'mongodb',    name:'MongoDB (Atlas Dedicated)', trademarkSymbol:'®', cat:'JSON / Document', unitCost:2.96, blurb:'Document database — Atlas Dedicated list pricing.', source:'List price: Atlas Dedicated M30 tier, $0.54/hr, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">mongodb.com/pricing</a>. For workloads under 500 ops/sec, MongoDB’s Flex tier runs cheaper — $0.72/ops-sec/yr. Does not include premium support by default (MongoDB’s free Basic tier); MongoDB does not publicly disclose Enterprise-tier support pricing — add your own % of spend in Step 3 if you have a quote.'},
   {id:'dynamodb',   name:'DynamoDB',    trademarkSymbol:'®', cat:'JSON / Document', unitCost:11.81, blurb:'AWS managed key-value / document store.', source:'List price: AWS on-demand rate, $0.125/M reads + $0.625/M writes, blended 50/50 and annualized. <a href="https://aws.amazon.com/dynamodb/pricing" target="_blank" rel="noopener">aws.amazon.com/dynamodb/pricing</a>'},
-  {id:'redis',      name:'Redis',       trademarkSymbol:'®', cat:'Cache',  unitCost:0.38, blurb:'In-memory cache / store.', source:'Redis Cloud Pro, at a representative 50,000 ops/sec, subject to a $200/month minimum. Effective rate stays within $0.38–$0.48 across most realistic throughput levels. <a href="https://redis.io/pricing/" target="_blank" rel="noopener">redis.io/pricing</a>'},
+  {id:'redis',      name:'Redis',       trademarkSymbol:'®', cat:'Cache',  unitCost:0.07, blurb:'In-memory cache / store.', source:'Redis Cloud Pro, at a representative 50,000 ops/sec: $289/month, confirmed directly via Redis’s own pricing calculator ($0.07/ops-sec/yr). A $200/month Pro-tier minimum means this rate is not flat — it runs far higher at low throughput (~$2.40/ops-sec/yr at 1,000 ops/sec, floor-bound), lower at high throughput ($0.07 at 50,000). Does not include premium support by default — Redis doesn’t publish a clean support-tier percentage; add your own % of spend in Step 3 if you have a quote. <a href="https://redis.io/pricing/" target="_blank" rel="noopener">redis.io/pricing</a>'},
   {id:'memcached',  name:'Memcached',   trademarkSymbol:null, cat:'Cache',  unitCost:0.13, blurb:'Open-source cache; cost reflects hosting only, not license.', source:'AWS ElastiCache Serverless, at a representative 50,000 ops/sec. A $1,095/year minimum storage fee means this rate is not flat — it runs higher at low throughput ($11), lower at high throughput ($0.13). <a href="https://aws.amazon.com/elasticache/pricing/" target="_blank" rel="noopener">aws.amazon.com/elasticache/pricing</a>'},
   {id:'oracle',     name:'Oracle',      trademarkSymbol:'®', cat:'SQL',    unitCost:30, blurb:'Enterprise RDBMS — list pricing plus support.', source:'$47.5K/processor list + 22%/yr support, amortized, ÷ an assumed sustained-throughput-per-processor. Source: <a href="https://www.oracle.com/a/ocom/docs/corporate/pricing/technology-price-list-070617.pdf" target="_blank" rel="noopener">Oracle price list</a>'},
   {id:'sqlserver',  name:'SQL Server',  trademarkSymbol:'®', cat:'SQL',    unitCost:4.25, blurb:'Microsoft RDBMS — Enterprise Edition list pricing.', source:'SQL Server 2022 Enterprise, perpetual license, $7,561.50/core + ~25%/yr Software Assurance, amortized over 5 years, assuming ~800 sustained ops/sec per core. Priced for 2022 (2025 edition pricing not yet public). <a href="https://www.microsoft.com/en-us/sql-server/sql-server-2022-pricing" target="_blank" rel="noopener">microsoft.com/sql-server/pricing</a>'},
   {id:'postgres',   name:'PostgreSQL',  trademarkSymbol:'®', cat:'SQL',    unitCost:0.96, blurb:'Open-source RDBMS; cost reflects managed hosting, not license.', source:'AWS RDS for PostgreSQL, db.m6g.large On-Demand, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://aws.amazon.com/rds/postgresql/pricing/" target="_blank" rel="noopener">aws.amazon.com/rds/postgresql/pricing</a>'},
-  {id:'mongovector',name:'MongoDB (Vector, Scalar Quantization)', trademarkSymbol:'®', cat:'Vector Search', unitCost:78, blurb:'Vector search add-on on MongoDB Atlas.', source:'MongoDB’s own published Vector Search benchmark, at a realistic 15.3M-vector scale, scalar quantization: S50 Storage-Optimized Search Nodes on AWS ($0.52/hr/node &times; 2 nodes), 116.8 QPS. <a href="https://www.mongodb.com/docs/vector-search/benchmark/overview/" target="_blank" rel="noopener">mongodb.com/docs/vector-search/benchmark/overview</a> &middot; <a href="https://www.mongodb.com/docs/vector-search/benchmark/results/" target="_blank" rel="noopener">results</a>'},
+  {id:'mongovector',name:'MongoDB (Vector, Scalar Quantization)', trademarkSymbol:'®', cat:'Vector Search', unitCost:78, blurb:'Vector search add-on on MongoDB Atlas.', source:'MongoDB’s own published Vector Search benchmark, at a realistic 15.3M-vector scale, scalar quantization: S50 Storage-Optimized Search Nodes on AWS ($0.52/hr/node &times; 2 nodes), 116.8 QPS. <a href="https://www.mongodb.com/docs/vector-search/benchmark/overview/" target="_blank" rel="noopener">mongodb.com/docs/vector-search/benchmark/overview</a> &middot; <a href="https://www.mongodb.com/docs/vector-search/benchmark/results/" target="_blank" rel="noopener">results</a>. Does not include premium support by default — add your own % of spend in Step 3; shared with the Atlas Dedicated row since both run on the same Atlas account/support plan, so it only applies once.'},
   {id:'alloydb',    name:'AlloyDB',     trademarkSymbol:'™', cat:'Vector Search', unitCost:13, blurb:'Google Cloud’s Postgres-compatible database with vector support.', source:'Head-to-head Couchbase-vs-AlloyDB vector search benchmark on matched hardware (100M vectors, 768-dim and 128-dim), using AlloyDB’s ScaNN index. Underlying compute cost independently verified against Google’s public pricing (<a href="https://cloud.google.com/alloydb/pricing" target="_blank" rel="noopener">cloud.google.com/alloydb/pricing</a>). Consistent across both datasets.'},
-  {id:'pinecone',   name:'Pinecone',    trademarkSymbol:null, cat:'Vector Search', unitCost:198, blurb:'Serverless vector database, billed on read/write units + storage.', source:'Dedicated Read Nodes (Pinecone’s tier for sustained, high-QPS workloads): T1 node, $969/month (AWS us-east-1, Standard), sized to Pinecone’s own published customer benchmark (200–270 QPS, 14M vectors, 4 replicas). For bursty/unpredictable traffic, Pinecone’s pay-per-request tier runs closer to $2,000/ops-sec/yr instead. <a href="https://docs.pinecone.io/guides/manage-cost/understanding-cost" target="_blank" rel="noopener">docs.pinecone.io/guides/manage-cost/understanding-cost</a>'},
-  {id:'elasticsearch', name:'Elasticsearch', trademarkSymbol:'®', cat:'Full Text Search', unitCost:1.84, blurb:'Distributed full-text search & analytics engine.', source:'List price: Elastic Cloud Serverless (<a href="https://www.elastic.co/pricing/serverless-search" target="_blank" rel="noopener">elastic.co/pricing/serverless-search</a>), $0.09/VCU-hr search + $0.14/VCU-hr ingest, blended 70/30 search-weighted = $1.84/ops-sec/yr, ÷ an assumed ~500 sustained ops/sec per VCU (our own sizing assumption — Elastic doesn’t publish a throughput rating). Shown above rounded to $2.'},
+  {id:'pinecone',   name:'Pinecone',    trademarkSymbol:null, cat:'Vector Search', unitCost:198, blurb:'Serverless vector database, billed on read/write units + storage.', source:'Dedicated Read Nodes (Pinecone’s tier for sustained, high-QPS workloads): T1 node, $969/month (AWS us-east-1, Standard), sized to Pinecone’s own published customer benchmark (200–270 QPS, 14M vectors, 4 replicas). For bursty/unpredictable traffic, Pinecone’s pay-per-request tier runs closer to $2,000/ops-sec/yr instead. Pro-level support (24/7, SEV-1 in 2hrs) is bundled at this tier. Pinecone’s fastest-response Premium tier (SEV-1 in 30 mins) requires an Enterprise annual commitment with no published price — not included by default; add your own % of spend in Step 3 if you have a quote. <a href="https://docs.pinecone.io/guides/manage-cost/understanding-cost" target="_blank" rel="noopener">docs.pinecone.io/guides/manage-cost/understanding-cost</a> &middot; <a href="https://www.pinecone.io/pricing/" target="_blank" rel="noopener">pinecone.io/pricing</a>'},
+  {id:'elasticsearch', name:'Elasticsearch', trademarkSymbol:'®', cat:'Full-Text Search', unitCost:1.84, blurb:'Distributed full-text search & analytics engine.', source:'List price: Elastic Cloud Serverless (<a href="https://www.elastic.co/pricing/serverless-search" target="_blank" rel="noopener">elastic.co/pricing/serverless-search</a>), $0.09/VCU-hr search + $0.14/VCU-hr ingest, blended 70/30 search-weighted = $1.84/ops-sec/yr base, ÷ an assumed ~500 sustained ops/sec per VCU (our own sizing assumption — Elastic doesn’t publish a throughput rating). Elastic’s own publicly listed Enterprise support tier (+15% of charge) is applied by default in Step 3 — adjust there if you’re on Gold (+5%) or Platinum (+10%) instead.'},
 ];
 
 /* Renders a tool's name with its trademark symbol as a small superscript --
@@ -633,7 +641,19 @@ function renderToolName(tool) {
     ? `${tool.name}<sup style="font-size:0.6em;">${tool.trademarkSymbol}</sup>`
     : tool.name;
 }
-const CATEGORY_ORDER = ['Mobile','JSON / Document','Cache','SQL','Vector Search','Full Text Search'];
+function renderSupportPill(c) {
+  if (['mongodb','mongovector','redis'].includes(c.id)) {
+    return ` <span class="tco-badge" style="background:#fff2f2; color:var(--cb-red-dark);">support extra</span>`;
+  }
+  if (c.id === 'pinecone') {
+    return ` <span class="tco-badge" style="background:#fff2f2; color:var(--cb-red-dark);">premium support extra</span>`;
+  }
+  if (c.id === 'elasticsearch') {
+    return ` <span class="tco-badge" style="background:#fff7e5; color:var(--amber);">+15% support (published)</span>`;
+  }
+  return '';
+}
+const CATEGORY_ORDER = ['Mobile','JSON / Document','Cache','SQL','Vector Search','Full-Text Search'];
 
 /* ===== Inference (token) savings module =====
    Deliberately separate from the consolidation model above. Two inputs only,
@@ -671,7 +691,30 @@ const state = {
   overrides: {},
   cbUnitCost: 1.57,
   engineerCost: 165000,
+  supportPct: {
+    mongodb: 0,        // shared with mongovector — MongoDB doesn't publicly disclose this
+    redis: 0,          // no clean public % found
+    pinecone: 0,       // Premium tier undisclosed; base already includes Pro-level support
+    elasticsearch: 15, // publicly known (Elastic's own Enterprise tier)
+  },
 };
+
+const SUPPORT_PCT_VENDORS = [
+  { key: 'mongodb', label: 'MongoDB (Atlas Dedicated + Vector)', appliesToIds: ['mongodb','mongovector'],
+    note: 'MongoDB does not publicly disclose Enterprise support pricing. Enter what your plan actually costs, as a % of your MongoDB spend — applies once even if both MongoDB rows are selected.' },
+  { key: 'redis', label: 'Redis', appliesToIds: ['redis'],
+    note: 'Redis does not publish a clean support-tier percentage. Enter what your plan actually costs, as a % of your Redis spend, if applicable.' },
+  { key: 'pinecone', label: 'Pinecone', appliesToIds: ['pinecone'],
+    note: 'Pinecone\'s Pro-level support is already included in the base price. Its Premium tier requires an Enterprise annual commitment with no published price — enter a % here only if you have a quote.' },
+  { key: 'elasticsearch', label: 'Elasticsearch', appliesToIds: ['elasticsearch'],
+    note: 'Elastic publishes this rate directly: Gold +5%, Platinum +10%, Enterprise +15% (defaulted here). Adjust if your plan differs.' },
+];
+
+function supportKeyFor(id) { return id === 'mongovector' ? 'mongodb' : id; }
+function supportPctFor(id) {
+  const key = supportKeyFor(id);
+  return state.supportPct.hasOwnProperty(key) ? state.supportPct[key] : 0;
+}
 
 /* ===== Labor / team-overhead model =====
    Computed once for the whole stack, not per tool then summed. At n=1 (a single
@@ -720,7 +763,7 @@ function buildToolGroups(){
       <label class="check-card" data-id="${c.id}">
         <input type="checkbox" id="chk-${c.id}" ${state.selected.has(c.id) ? 'checked' : ''}>
         <span style="display:block;">
-          <span>${renderToolName(c)}<span class="tco-tip" tabindex="0">&#9432;<span class="tco-tip-bubble">
+          <span>${renderToolName(c)}${renderSupportPill(c)}<span class="tco-tip" tabindex="0">&#9432;<span class="tco-tip-bubble">
             <span class="tco-tip-figure">${fmtUnitCost(c.unitCost)} / ops-sec / yr</span>
             <span class="tco-tip-source">${c.source}</span>
           </span></span></span>
@@ -765,13 +808,40 @@ function buildCostFields(){
   });
 }
 
+function buildSupportFields(){
+  const wrap = document.getElementById('supportFields');
+  if (!wrap) return;
+  wrap.innerHTML = SUPPORT_PCT_VENDORS.map(v => {
+    const visible = v.appliesToIds.some(id => state.selected.has(id));
+    return `
+    <div class="field" data-support-field="${v.key}" style="${visible ? '' : 'display:none;'}">
+      <div><label>${v.label}</label><p>${v.note}</p></div>
+      <input type="number" data-support-input="${v.key}" value="${state.supportPct[v.key]}" min="0" max="100" step="1">
+    </div>`;
+  }).join('');
+  wrap.querySelectorAll('[data-support-input]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      state.supportPct[inp.dataset.supportInput] = parseFloat(inp.value) || 0;
+      render();
+    });
+  });
+}
+
 function refreshCostFieldVisibility(){
   document.querySelectorAll('[data-cost-field]').forEach(el => {
     el.style.display = state.selected.has(el.dataset.costField) ? '' : 'none';
   });
+  document.querySelectorAll('[data-support-field]').forEach(el => {
+    const vendor = SUPPORT_PCT_VENDORS.find(v => v.key === el.dataset.supportField);
+    el.style.display = vendor && vendor.appliesToIds.some(id => state.selected.has(id)) ? '' : 'none';
+  });
 }
 
-function unitCostFor(c){ return state.overrides.hasOwnProperty(c.id) ? state.overrides[c.id] : c.unitCost; }
+function unitCostFor(c){
+  const base = state.overrides.hasOwnProperty(c.id) ? state.overrides[c.id] : c.unitCost;
+  const pct = supportPctFor(c.id);
+  return pct > 0 ? base * (1 + pct / 100) : base;
+}
 
 function compute(){
   const selectedTools = COMPETITORS.filter(c => state.selected.has(c.id));
@@ -809,7 +879,7 @@ function compute(){
    That informs the ADDRESSABLE share, not the hit rate -- so we surface it as a
    suggestion rather than silently substituting an archetype. */
 function retrievalToolsSelected(){
-  return COMPETITORS.some(c => state.selected.has(c.id) && (c.cat === 'Vector Search' || c.cat === 'Full Text Search'));
+  return COMPETITORS.some(c => state.selected.has(c.id) && (c.cat === 'Vector Search' || c.cat === 'Full-Text Search'));
 }
 
 function archetypeMeta(){
@@ -882,15 +952,19 @@ function render(){
     bt.innerHTML = `<tr><td colspan="2">Select tools to see the breakdown.</td></tr>`;
   } else {
     let html = r.rows.map(row => {
-      let rowHtml = `<tr><td>${row.name} (current, infra)</td><td>${fmtUSD(row.infra)}/yr</td></tr>`;
-      if (row.id === 'mongodb') {
-        rowHtml += `<tr><td colspan="2"><span class="tco-breakdown-note">Reflects free Basic support (MongoDB's default); Couchbase's figure includes Capella's Enterprise support plan. MongoDB's cost for a comparable support tier is not publicly published.</span></td></tr>`;
+      const pct = supportPctFor(row.id);
+      const rowLabel = pct > 0 ? `${row.name} (current, infra, +${pct}% support)` : `${row.name} (current, infra)`;
+      let rowHtml = `<tr><td>${rowLabel}</td><td>${fmtUSD(row.infra)}/yr</td></tr>`;
+      if (pct > 0) {
+        rowHtml += `<tr><td colspan="2"><span class="tco-breakdown-note">Includes a ${pct}% support-plan adjustment entered in Step 3.</span></td></tr>`;
+      } else if (['mongodb','mongovector','redis','pinecone'].includes(row.id)) {
+        rowHtml += `<tr><td colspan="2"><span class="tco-breakdown-note">Does not include a premium support plan by default &mdash; add one as a % of spend in Step 3 if applicable.</span></td></tr>`;
       }
       return rowHtml;
     }).join('');
     html += `<tr><td>Team &amp; integration overhead (${r.n} tool${r.n === 1 ? '' : 's'})</td><td>${fmtUSD(r.totalLaborCost)}/yr</td></tr>`;
     html += `<tr><td><strong>Current stack total</strong></td><td><strong>${fmtUSD(r.currentTotal)}/yr</strong></td></tr>`;
-    html += `<tr><td>Couchbase (Capella Enterprise) &mdash; infra</td><td>${fmtUSD(r.cbInfra)}/yr</td></tr>`;
+    html += `<tr><td>Couchbase (Capella Enterprise) &mdash; infra <span style="color:var(--muted); font-weight:400;">(support included)</span></td><td>${fmtUSD(r.cbInfra)}/yr</td></tr>`;
     html += `<tr><td>Couchbase (team &amp; integration)</td><td>${fmtUSD(r.cbLaborCost)}/yr</td></tr>`;
     html += `<tr><td><strong>Couchbase (Capella Enterprise, consolidated) total</strong></td><td><strong>${fmtUSD(r.cbTotal)}/yr</strong></td></tr>`;
     html += `<tr><td colspan="2"><span class="tco-breakdown-note">Systems today: ${r.n} → after: 1. Reduction = 1 − (1 ÷ ${r.n}) = ${r.complexityMid.toFixed(0)}%, based on duplicate data copies, patch/security surfaces & integration points removed as each system is consolidated. Team &amp; integration overhead follows the same logic in dollar terms: at ${r.n} tool${r.n === 1 ? '' : 's'} selected, ${r.n === 1 ? 'it exactly matches Couchbase’s own overhead — zero assumed labor savings on a 1-for-1 swap.' : 'it grows faster than Couchbase’s single-platform overhead as more systems are kept in sync.'}</span></td></tr>`;
@@ -975,6 +1049,7 @@ document.addEventListener('click', () => {
 
 buildToolGroups();
 buildCostFields();
+buildSupportFields();
 render();
 </script>
 </body>
