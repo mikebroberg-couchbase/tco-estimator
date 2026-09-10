@@ -382,7 +382,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
     <div class="panel" style="margin: 1.5rem clamp(1rem, 4vw, 4rem) 0; padding: clamp(1rem, 2.2vw, 1.6rem);">
       <h2 style="font-size:1.1rem;">How this calculator works</h2>
       <p class="subhead" style="font-size:0.95rem; margin-bottom:0.8rem;">This tool estimates what it costs to run multiple separate databases, caches, and search engines side by side, versus consolidating them onto one Couchbase Capella platform. Select the tools you use today, enter your traffic level, and see infrastructure and team-overhead costs compared directly, with every assumption shown.</p>
-      <p class="subhead" style="font-size:0.95rem;">Nearly every vendor default in this calculator is sourced to that vendor's own public pricing page or a benchmark &mdash; not an internal guess at what a competitor should cost. (The exception is Ditto, which doesn't disclose public pricing.) Where a number depends on an assumption we made ourselves, like how much traffic a rented server can handle, that's disclosed on the row that uses it. Full sourcing and formulas are in "Methodology &amp; validation notes" below.</p>
+      <p class="subhead" style="font-size:0.95rem;">Nearly every vendor default in this calculator is sourced to that vendor's own public pricing page or a benchmark &mdash; not an internal guess at what a competitor should cost. (The exception is Ditto, which doesn't disclose public pricing.) Where a number depends on an assumption we made ourselves, like how much traffic a rented server can handle, that's disclosed in the tooltips. Full sourcing and formulas are in "Methodology &amp; validation notes" below.</p>
     </div>
   </div>
 
@@ -398,14 +398,15 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
 
       <p class="eyebrow section-heading spaced">Step 2</p>
       <h2>Workload</h2>
+      <h3 style="margin-bottom:0.5rem;">Database usage</h3>
       <div class="field">
         <div>
           <label>Operations per second</label>
-          <p>Sustained ops/sec across reads &amp; writes — the throughput basis for both stacks.</p>
+          <p>Sustained ops/sec across reads and writes.</p>
         </div>
         <div class="field-controls">
-          <input type="range" id="opsSlider" min="100" max="200000" step="100" value="10000">
-          <input type="number" id="opsInput" min="1" max="200000" value="10000">
+          <input type="range" id="opsSlider" min="100" max="200000" step="100" value="50000">
+          <input type="number" id="opsInput" min="1" max="200000" value="50000">
         </div>
       </div>
       <div class="button-row">
@@ -415,19 +416,20 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
         <button type="button" class="tco-ghost-btn" data-ops="150000">150K &middot; hyperscale</button>
       </div>
 
+      <h3 style="margin-bottom:0.5rem; margin-top:1.2rem;">LLM token usage</h3>
       <div class="field" style="margin-top:1rem;">
         <div>
           <label>Monthly token budget <span class="tco-badge">optional</span></label>
           <p>Take it straight off your monthly model-provider bill &mdash; the dollar total you pay for tokens today, across all models.</p>
         </div>
         <div class="field-controls">
-          <input type="number" id="llmSpendMonthly" min="0" max="10000000" step="500" value="0" placeholder="0">
+          <input type="number" id="llmSpendMonthly" min="0" max="1000000" step="500" value="0" placeholder="0">
           <span class="source-line">US dollars per month. Estimated as its own line item, never folded into the consolidation savings figure.</span>
         </div>
       </div>
 
       <div id="archetypeBlock" class="tool-group" style="margin-top:1rem;">
-        <h3>What shape is the AI workload? <span class="tco-badge">shapes the estimate</span></h3>
+        <h3>What shape is the AI workload? <span class="tco-badge">optional, shapes the estimate</span></h3>
         <p class="subhead" style="font-size:0.85rem; margin-bottom:0.8rem;">How often a request can be answered from cache is a property of your workload, not of Couchbase.</p>
         <div class="check-grid" id="archetypeGrid">
           <label class="check-card"><input type="radio" name="archetype" value="unknown" checked><span>Not sure yet<small>A generic 7&ndash;18% of the token budget.</small></span></label>
@@ -610,17 +612,17 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
 const COMPETITORS = [
   {id:'firebase',   name:'Firestore',    trademarkSymbol:'™', cat:'Mobile', unitCost:18.90, blurb:'Google Cloud’s fully managed NoSQL document database.', source:'List price: Google Firestore, $0.30/M reads + $0.90/M writes, blended 50/50 and annualized. <a href="https://cloud.google.com/firestore/pricing" target="_blank" rel="noopener">cloud.google.com/firestore/pricing</a>'},
   {id:'ditto',      name:'Ditto', trademarkSymbol:'®', cat:'Mobile', unitCost:25, blurb:'Peer-to-peer edge sync for offline-first mobile apps.', source:'Ditto does not publish list pricing (quote-based). Figure is an unverified planning estimate.'},
-  {id:'mongodb',    name:'MongoDB (Atlas Dedicated)', trademarkSymbol:'®', cat:'JSON / Document', unitCost:2.96, blurb:'Document database — Atlas Dedicated list pricing.', source:'List price: Atlas Dedicated M30 tier, $0.54/hr, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">mongodb.com/pricing</a>. For workloads under 500 ops/sec, MongoDB’s Flex tier runs cheaper — $0.72/ops-sec/yr. Reflects free Basic support (MongoDB’s default); Couchbase’s figure includes Capella’s Enterprise support plan. MongoDB’s cost for a comparable support tier is not publicly published.'},
+  {id:'mongodb',    name:'MongoDB (Atlas Dedicated)', trademarkSymbol:'®', cat:'JSON / Document', unitCost:2.96, blurb:'Document database — Atlas Dedicated list pricing.', source:'List price: Atlas Dedicated M30 tier, $0.54/hr, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">mongodb.com/pricing</a>. For workloads under 500 ops/sec, MongoDB’s Flex tier runs cheaper — $0.72 / ops-sec / yr. Reflects free Basic support (MongoDB’s default); Couchbase’s figure includes Capella’s Enterprise support plan. MongoDB’s cost for a comparable support tier is not publicly published.'},
   {id:'dynamodb',   name:'DynamoDB',    trademarkSymbol:'®', cat:'JSON / Document', unitCost:11.81, blurb:'AWS managed key-value / document store.', source:'List price: AWS on-demand rate, $0.125/M reads + $0.625/M writes, blended 50/50 and annualized. <a href="https://aws.amazon.com/dynamodb/pricing" target="_blank" rel="noopener">aws.amazon.com/dynamodb/pricing</a>'},
-  {id:'redis',      name:'Redis',       trademarkSymbol:'®', cat:'Cache',  unitCost:0.48, blurb:'In-memory cache / store.', source:'Redis Cloud Pro, at a representative 5,000 ops/sec, subject to a $200/month minimum. Effective rate stays within $0.38–$0.48 across most realistic throughput levels. <a href="https://redis.io/pricing/" target="_blank" rel="noopener">redis.io/pricing</a>'},
-  {id:'memcached',  name:'Memcached',   trademarkSymbol:null, cat:'Cache',  unitCost:0.33, blurb:'Open-source cache; cost reflects hosting only, not license.', source:'AWS ElastiCache Serverless, at a representative 5,000 ops/sec. A $1,095/year minimum storage fee means this rate is not flat — it runs higher at low throughput ($11), lower at high throughput ($0.13). <a href="https://aws.amazon.com/elasticache/pricing/" target="_blank" rel="noopener">aws.amazon.com/elasticache/pricing</a>'},
+  {id:'redis',      name:'Redis',       trademarkSymbol:'®', cat:'Cache',  unitCost:0.38, blurb:'In-memory cache / store.', source:'Redis Cloud Pro, at a representative 50,000 ops/sec, subject to a $200/month minimum. Effective rate stays within $0.38–$0.48 across most realistic throughput levels. <a href="https://redis.io/pricing/" target="_blank" rel="noopener">redis.io/pricing</a>'},
+  {id:'memcached',  name:'Memcached',   trademarkSymbol:null, cat:'Cache',  unitCost:0.13, blurb:'Open-source cache; cost reflects hosting only, not license.', source:'AWS ElastiCache Serverless, at a representative 50,000 ops/sec. A $1,095/year minimum storage fee means this rate is not flat — it runs higher at low throughput ($11), lower at high throughput ($0.13). <a href="https://aws.amazon.com/elasticache/pricing/" target="_blank" rel="noopener">aws.amazon.com/elasticache/pricing</a>'},
   {id:'oracle',     name:'Oracle',      trademarkSymbol:'®', cat:'SQL',    unitCost:30, blurb:'Enterprise RDBMS — list pricing plus support.', source:'$47.5K/processor list + 22%/yr support, amortized, ÷ an assumed sustained-throughput-per-processor. Source: <a href="https://www.oracle.com/a/ocom/docs/corporate/pricing/technology-price-list-070617.pdf" target="_blank" rel="noopener">Oracle price list</a>'},
   {id:'sqlserver',  name:'SQL Server',  trademarkSymbol:'®', cat:'SQL',    unitCost:4.25, blurb:'Microsoft RDBMS — Enterprise Edition list pricing.', source:'SQL Server 2022 Enterprise, perpetual license, $7,561.50/core + ~25%/yr Software Assurance, amortized over 5 years, assuming ~800 sustained ops/sec per core. Priced for 2022 (2025 edition pricing not yet public). <a href="https://www.microsoft.com/en-us/sql-server/sql-server-2022-pricing" target="_blank" rel="noopener">microsoft.com/sql-server/pricing</a>'},
   {id:'postgres',   name:'PostgreSQL',  trademarkSymbol:'®', cat:'SQL',    unitCost:0.96, blurb:'Open-source RDBMS; cost reflects managed hosting, not license.', source:'AWS RDS for PostgreSQL, db.m6g.large On-Demand, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://aws.amazon.com/rds/postgresql/pricing/" target="_blank" rel="noopener">aws.amazon.com/rds/postgresql/pricing</a>'},
   {id:'mongovector',name:'MongoDB (Vector, Scalar Quantization)', trademarkSymbol:'®', cat:'Vector Search', unitCost:78, blurb:'Vector search add-on on MongoDB Atlas.', source:'MongoDB’s own published Vector Search benchmark, at a realistic 15.3M-vector scale, scalar quantization: S50 Storage-Optimized Search Nodes on AWS ($0.52/hr/node &times; 2 nodes), 116.8 QPS. <a href="https://www.mongodb.com/docs/vector-search/benchmark/overview/" target="_blank" rel="noopener">mongodb.com/docs/vector-search/benchmark/overview</a> &middot; <a href="https://www.mongodb.com/docs/vector-search/benchmark/results/" target="_blank" rel="noopener">results</a>'},
   {id:'alloydb',    name:'AlloyDB',     trademarkSymbol:'™', cat:'Vector Search', unitCost:13, blurb:'Google Cloud’s Postgres-compatible database with vector support.', source:'Head-to-head Couchbase-vs-AlloyDB vector search benchmark on matched hardware (100M vectors, 768-dim and 128-dim), using AlloyDB’s ScaNN index. Underlying compute cost independently verified against Google’s public pricing (<a href="https://cloud.google.com/alloydb/pricing" target="_blank" rel="noopener">cloud.google.com/alloydb/pricing</a>). Consistent across both datasets.'},
   {id:'pinecone',   name:'Pinecone',    trademarkSymbol:null, cat:'Vector Search', unitCost:198, blurb:'Serverless vector database, billed on read/write units + storage.', source:'Dedicated Read Nodes (Pinecone’s tier for sustained, high-QPS workloads): T1 node, $969/month (AWS us-east-1, Standard), sized to Pinecone’s own published customer benchmark (200–270 QPS, 14M vectors, 4 replicas). For bursty/unpredictable traffic, Pinecone’s pay-per-request tier runs closer to $2,000/ops-sec/yr instead. <a href="https://docs.pinecone.io/guides/manage-cost/understanding-cost" target="_blank" rel="noopener">docs.pinecone.io/guides/manage-cost/understanding-cost</a>'},
-  {id:'elasticsearch', name:'Elasticsearch', trademarkSymbol:'®', cat:'Full Text Search', unitCost:2, blurb:'Distributed full-text search & analytics engine.', source:'List price: Elastic Cloud Serverless (<a href="https://www.elastic.co/pricing/serverless-search" target="_blank" rel="noopener">elastic.co/pricing/serverless-search</a>), $0.09/VCU-hr search + $0.14/VCU-hr ingest, blended 70/30 search-weighted = $1.84/ops-sec/yr, ÷ an assumed ~500 sustained ops/sec per VCU (our own sizing assumption — Elastic doesn’t publish a throughput rating). Shown rounded to $2.00 on the card.'},
+  {id:'elasticsearch', name:'Elasticsearch', trademarkSymbol:'®', cat:'Full Text Search', unitCost:1.84, blurb:'Distributed full-text search & analytics engine.', source:'List price: Elastic Cloud Serverless (<a href="https://www.elastic.co/pricing/serverless-search" target="_blank" rel="noopener">elastic.co/pricing/serverless-search</a>), $0.09/VCU-hr search + $0.14/VCU-hr ingest, blended 70/30 search-weighted = $1.84/ops-sec/yr, ÷ an assumed ~500 sustained ops/sec per VCU (our own sizing assumption — Elastic doesn’t publish a throughput rating). Shown above rounded to $2.'},
 ];
 
 /* Renders a tool's name with its trademark symbol as a small superscript --
@@ -663,7 +665,7 @@ const TOKEN_ARCHETYPES = {
 
 const state = {
   selected: new Set(['mongodb', 'redis']),
-  ops: 10000,
+  ops: 50000,
   llmSpendMonthly: 0,
   archetype: 'unknown',
   overrides: {},
@@ -681,7 +683,7 @@ const LABOR_BASE_ADMIN = 0.35;          // baseline admin FTE, ties to a single 
 const LABOR_ADMIN_EXPONENT = 0.7;       // sub-linear: shared tooling/monitoring economies as tool count grows
 const LABOR_INTEGRATION_UNIT = 0.25;    // integration FTE unit, applies only for n >= 2
 const LABOR_INTEGRATION_EXPONENT = 1.5; // tempered super-linear: cross-system integration complexity
-const LABOR_WORKLOAD_REF_OPS = 5000;    // matches the calculator's own default ops/sec
+const LABOR_WORKLOAD_REF_OPS = 5000;    // internal reference point for the labor formula, independent of the UI's default ops/sec value
 const LABOR_WORKLOAD_EXPONENT = 0.2;    // gentle scaling with workload size
 
 function workloadFactor(ops) {
@@ -946,7 +948,7 @@ document.getElementById('toggleBreakdown').addEventListener('click', () => {
 });
 
 document.getElementById('llmSpendMonthly').addEventListener('input', (e) => {
-  state.llmSpendMonthly = Math.min(10000000, Math.max(0, parseFloat(e.target.value) || 0));
+  state.llmSpendMonthly = Math.min(1000000, Math.max(0, parseFloat(e.target.value) || 0));
   render();
 });
 
