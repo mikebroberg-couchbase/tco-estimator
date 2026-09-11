@@ -452,9 +452,13 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <div class="input-stack" id="costFields"></div>
 
           <div class="input-stack" style="margin-top:0.9rem;">
-            <div class="field">
+            <div class="field" data-cost-field="cb-general" style="display:none;">
               <div><label>Couchbase (Capella Enterprise)</label><p>$ / ops-sec / yr <span style="color:var(--muted);">(support included)</span></p></div>
               <input type="number" id="cbUnitCost" value="1.57" step="0.01">
+            </div>
+            <div class="field" data-cost-field="cb-vector" style="display:none;">
+              <div><label>Couchbase (Capella Enterprise) &mdash; Vector Search</label><p>$ / ops-sec / yr <span style="color:var(--muted);">(support included)</span> &mdash; used only when a vector search tool is selected, in place of the general rate above</p></div>
+              <input type="number" id="cbVectorUnitCost" value="14" step="0.5">
             </div>
           </div>
 
@@ -530,6 +534,9 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
 
           <h3>Why some vendors show a support badge and others don't</h3>
           <p><code>adjusted cost = base $/ops-sec/yr &times; (1 + support % &divide; 100)</code>. Premium support is priced differently across vendors. MongoDB, Redis, and Pinecone sell support separately, and none of the three publish a clean percentage &mdash; Step 3 lets you enter your own if you have a quote, defaulted to 0%. Elasticsearch publishes its support-tier percentage directly (Gold +5%, Platinum +10%, Enterprise +15%), so that's applied by default. Oracle and SQL Server are a different case again: their support fee is technically optional, but standard practice for production use &mdash; declining it means giving up patches, updates, and support indefinitely, which is why real deployments overwhelmingly renew it every year. That fee (22%/year, ~25%/year respectively) is already folded into their base figures rather than modeled as a separate toggle. Couchbase Capella's own price bundles support the same way, with no separate charge to add. MongoDB's two rows share one support field, since both run on the same Atlas account and would only be billed once in reality. A similar adjustment isn't offered for databases delivered through a hyperscale cloud platform &mdash; Amazon DynamoDB, Google Firestore, Amazon RDS for PostgreSQL, Amazon ElastiCache for Memcached, and Google AlloyDB. Support for these services is typically sold at the account level, spans dozens of unrelated products, and is shaped by enterprise discount agreements that vary widely by customer. Isolating one database's share of that arrangement would require assumptions too speculative to stand behind, so those rows reflect infrastructure pricing only.</p>
+
+          <h3>Vector search recall isn't apples-to-apples</h3>
+          <p>Vector search costs swing widely based on recall (search accuracy). AlloyDB benchmarks at 80% recall. MongoDB only publishes a ~98% tier for scalar quantization benchmark, while Pinecone doesn't publish their recall at all. To keep this honest, we compare these tools against Couchbase’s vector-specific rate ($14/ops-sec/yr), benchmarked at an identical 80% recall. This makes the AlloyDB comparison a true head-to-head. We can't perfectly align MongoDB or Pinecone until they publish 80% recall data, but using our verified rate keeps the baseline grounded in reality.</p>
 
           <h3 style="margin-top:1.1rem;">Inference savings &mdash; a separate model</h3>
           <p><code>annual savings = annual model spend &times; addressable share &times; cache hit rate</code>, shown as a range. Reported as its own line, never added to the consolidation figure or its denominator &mdash; deliberately, since inference costs vary.</p>
@@ -624,9 +631,9 @@ const COMPETITORS = [
   {id:'oracle',     name:'Oracle',      trademarkSymbol:'®', cat:'SQL',    unitCost:30, blurb:'Enterprise RDBMS — list pricing plus support.', source:'$47.5K/processor list + 22%/yr support, amortized, ÷ an assumed sustained-throughput-per-processor. Source: <a href="https://www.oracle.com/a/ocom/docs/corporate/pricing/technology-price-list-070617.pdf" target="_blank" rel="noopener">Oracle price list</a>'},
   {id:'sqlserver',  name:'SQL Server',  trademarkSymbol:'®', cat:'SQL',    unitCost:4.25, blurb:'Microsoft RDBMS — Enterprise Edition list pricing.', source:'SQL Server 2022 Enterprise, perpetual license, $7,561.50/core + ~25%/yr Software Assurance, amortized over 5 years, assuming ~800 sustained ops/sec per core. Priced for 2022 (2025 edition pricing not yet public). <a href="https://www.microsoft.com/en-us/sql-server/sql-server-2022-pricing" target="_blank" rel="noopener">microsoft.com/sql-server/pricing</a>'},
   {id:'postgres',   name:'PostgreSQL',  trademarkSymbol:'®', cat:'SQL',    unitCost:0.96, blurb:'Open-source RDBMS; cost reflects managed hosting, not license.', source:'AWS RDS for PostgreSQL, db.m6g.large On-Demand, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://aws.amazon.com/rds/postgresql/pricing/" target="_blank" rel="noopener">aws.amazon.com/rds/postgresql/pricing</a>'},
-  {id:'mongovector',name:'MongoDB (Vector, Scalar Quantization)', trademarkSymbol:'®', cat:'Vector Search', unitCost:78, blurb:'Vector search add-on on MongoDB Atlas.', source:'MongoDB’s own published Vector Search benchmark, at a realistic 15.3M-vector scale, scalar quantization: S50 Storage-Optimized Search Nodes on AWS ($0.52/hr/node &times; 2 nodes), 116.8 QPS. <a href="https://www.mongodb.com/docs/vector-search/benchmark/overview/" target="_blank" rel="noopener">mongodb.com/docs/vector-search/benchmark/overview</a> &middot; <a href="https://www.mongodb.com/docs/vector-search/benchmark/results/" target="_blank" rel="noopener">results</a>. Does not include premium support by default — add your own % of spend in Step 3; shared with the Atlas Dedicated row since both run on the same Atlas account/support plan, so it only applies once.'},
-  {id:'alloydb',    name:'AlloyDB',     trademarkSymbol:'™', cat:'Vector Search', unitCost:13, blurb:'Google Cloud’s Postgres-compatible database with vector support.', source:'Head-to-head Couchbase-vs-AlloyDB vector search benchmark on matched hardware (100M vectors, 768-dim and 128-dim), using AlloyDB’s ScaNN index. Underlying compute cost independently verified against Google’s public pricing (<a href="https://cloud.google.com/alloydb/pricing" target="_blank" rel="noopener">cloud.google.com/alloydb/pricing</a>). Consistent across both datasets.'},
-  {id:'pinecone',   name:'Pinecone',    trademarkSymbol:null, cat:'Vector Search', unitCost:150, blurb:'Serverless vector database, billed on read/write units + storage.', source:'Dedicated Read Nodes (Pinecone’s tier for sustained, high-QPS workloads): T1 node, $969/month (AWS us-east-1, Standard), confirmed directly via Pinecone’s own cost estimator at 14M vectors and 232 QPS — 3 nodes recommended at this scale, $2,907/month query cost ÷ 232 QPS &times; 12 = $150/ops-sec/yr. Pro-level support (24/7, SEV-1 in 2hrs) is bundled at this tier. Pinecone’s fastest-response Premium tier (SEV-1 in 30 mins) requires an Enterprise annual commitment with no published price — not included by default; add your own % of spend in Step 3 if you have a quote. <a href="https://www.pinecone.io/pricing/estimate/" target="_blank" rel="noopener">pinecone.io/pricing/estimate</a>'},
+  {id:'mongovector',name:'MongoDB (Vector, Scalar Quantization)', trademarkSymbol:'®', cat:'Vector Search', unitCost:78, blurb:'Vector search add-on on MongoDB Atlas.', source:'Based on MongoDB’s published benchmark on <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">S50 Storage-Optimized Search Nodes on AWS</a> at ~98% recall. Because MongoDB doesn\'t publish lower-recall pricing for scalar quantization, this reflects their most expensive setup. However, independent head-to-head testing at a matched 80% recall proves MongoDB requires roughly 5x the compute infrastructure to match Couchbase\'s native vector throughput. (Binary quantization runs roughly 1/4 the cost but sacrifices accuracy). Premium support is excluded &mdash; add your Atlas support % in Step 3. Sources: <a href="https://www.couchbase.com/content/capella/comparing-vector-search-capabilities-of-mongodb-and-couchbase-by-benchmarking-using-vectordbbench" target="_blank" rel="noopener">Couchbase VectorDBBench Whitepaper</a> &middot; <a href="https://www.mongodb.com/docs/vector-search/benchmark/overview/" target="_blank" rel="noopener">MongoDB benchmark</a>.'},
+  {id:'alloydb',    name:'AlloyDB',     trademarkSymbol:'™', cat:'Vector Search', unitCost:13, blurb:'Google Cloud’s Postgres-compatible database with vector support.', source:'Head-to-head Couchbase-vs-AlloyDB vector search benchmark on matched hardware (100M vectors, SIFT and LAION datasets), using AlloyDB’s ScaNN index on a production-grade 2-node cluster (primary + HA replica, 32 cores and 256GB RAM per node), at 80% recall (AlloyDB’s best-performing, highest-QPS configuration). Underlying compute cost independently verified against Google’s public pricing (<a href="https://cloud.google.com/alloydb/pricing" target="_blank" rel="noopener">cloud.google.com/alloydb/pricing</a>). The same benchmark, run on Couchbase at the identical 80% recall level, produced the vector-specific Couchbase rate used for comparison here (see Step 3) &mdash; nearly identical once compared at matched recall; see Methodology.'},
+  {id:'pinecone',   name:'Pinecone',    trademarkSymbol:null, cat:'Vector Search', unitCost:150, blurb:'Serverless vector database, billed on read/write units + storage.', source:'Dedicated Read Nodes (Pinecone’s tier for sustained, high-QPS workloads): T1 node, $969/month (AWS us-east-1, Standard), confirmed directly via Pinecone’s own cost estimator at 14M vectors and 232 QPS — 3 nodes recommended at this scale, $2,907/month query cost ÷ 232 QPS &times; 12 = $150/ops-sec/yr. Pinecone does not publish a recall/accuracy percentage for this configuration, so this figure can’t be recall-matched to the other vector rows here — see Methodology. Pro-level support (24/7, SEV-1 in 2hrs) is bundled at this tier. Pinecone’s fastest-response Premium tier (SEV-1 in 30 mins) requires an Enterprise annual commitment with no published price — not included by default; add your own % of spend in Step 3 if you have a quote. <a href="https://www.pinecone.io/pricing/estimate/" target="_blank" rel="noopener">pinecone.io/pricing/estimate</a>'},
   {id:'elasticsearch', name:'Elasticsearch', trademarkSymbol:'®', cat:'Full-Text Search', unitCost:1.84, blurb:'Distributed full-text search & analytics engine.', source:'List price: Elastic Cloud Serverless (<a href="https://www.elastic.co/pricing/serverless-search" target="_blank" rel="noopener">elastic.co/pricing/serverless-search</a>), $0.09/VCU-hr search + $0.14/VCU-hr ingest, blended 70/30 search-weighted = $1.84/ops-sec/yr base, ÷ an assumed ~500 sustained ops/sec per VCU (our own sizing assumption — Elastic doesn’t publish a throughput rating). Shown above rounded to $2. Elastic’s own publicly listed Enterprise support tier (+15% of charge) is applied by default in Step 3 — adjust there if you’re on Gold (+5%) or Platinum (+10%) instead.'},
 ];
 
@@ -690,6 +697,7 @@ const state = {
   archetype: 'unknown',
   overrides: {},
   cbUnitCost: 1.57,
+  cbVectorUnitCost: 14, // real, benchmark-confirmed vector-specific rate at matched 80% recall vs. AlloyDB — see Methodology
   engineerCost: 165000,
   supportPct: {
     mongodb: 0,        // shared with mongovector — MongoDB doesn't publicly disclose this
@@ -829,7 +837,14 @@ function buildSupportFields(){
 
 function refreshCostFieldVisibility(){
   document.querySelectorAll('[data-cost-field]').forEach(el => {
-    el.style.display = state.selected.has(el.dataset.costField) ? '' : 'none';
+    const key = el.dataset.costField;
+    if (key === 'cb-general') {
+      el.style.display = COMPETITORS.some(c => state.selected.has(c.id) && c.cat !== 'Vector Search') ? '' : 'none';
+    } else if (key === 'cb-vector') {
+      el.style.display = COMPETITORS.some(c => state.selected.has(c.id) && c.cat === 'Vector Search') ? '' : 'none';
+    } else {
+      el.style.display = state.selected.has(key) ? '' : 'none';
+    }
   });
   document.querySelectorAll('[data-support-field]').forEach(el => {
     const vendor = SUPPORT_PCT_VENDORS.find(v => v.key === el.dataset.supportField);
@@ -843,22 +858,34 @@ function unitCostFor(c){
   return pct > 0 ? base * (1 + pct / 100) : base;
 }
 
+function cbUnitCostFor(c){
+  return c.cat === 'Vector Search' ? state.cbVectorUnitCost : state.cbUnitCost;
+}
+
 function compute(){
   const selectedTools = COMPETITORS.filter(c => state.selected.has(c.id));
   const n = selectedTools.length;
+  // Labor overhead counts distinct vendor families, not raw selected rows. MongoDB's
+  // two rows (Atlas Dedicated + Vector) share one Atlas account and don't represent
+  // genuinely separate integration burden -- the same reasoning already used for the
+  // shared support-pct field. "Tools Selected" and Complexity Reduction still use the
+  // raw row count below, since those describe what's literally checked, not cost.
+  const laborN = new Set(selectedTools.map(c => supportKeyFor(c.id))).size;
 
   let infraTotal = 0;
   const rows = selectedTools.map(c => {
     const unit = unitCostFor(c);
     const infra = unit * state.ops;
     infraTotal += infra;
-    return {id:c.id, name:c.name, infra};
+    return {id:c.id, name:c.name, infra, cat:c.cat};
   });
 
-  const totalLaborCost = competitorStackLaborCost(n, state.ops, state.engineerCost);
+  const totalLaborCost = competitorStackLaborCost(laborN, state.ops, state.engineerCost);
   const currentTotal = infraTotal + totalLaborCost;
 
-  const cbInfra = state.cbUnitCost * state.ops;
+  const cbGeneralInfra = selectedTools.filter(c => c.cat !== 'Vector Search').reduce((sum, c) => sum + cbUnitCostFor(c) * state.ops, 0);
+  const cbVectorInfra = selectedTools.filter(c => c.cat === 'Vector Search').reduce((sum, c) => sum + cbUnitCostFor(c) * state.ops, 0);
+  const cbInfra = cbGeneralInfra + cbVectorInfra;
   const cbLaborCost = couchbaseLaborCost(state.ops, state.engineerCost);
   const cbTotal = cbInfra + cbLaborCost;
 
@@ -867,12 +894,9 @@ function compute(){
 
   const currentComplexity = n; // systems in play today
   const cbComplexity = n === 0 ? 0 : 1; // consolidated down to one platform
-  // Reduction is driven directly by how many systems are actually being eliminated:
-  // 1 tool selected = a straight swap, nothing consolidated, 0% reduction.
-  // 2+ tools = real consolidation, reduction grows with each system removed.
   const complexityMid = n <= 1 ? 0 : Math.max(0, Math.min(95, (1 - (1 / n)) * 100));
 
-  return {n, rows, infraTotal, totalLaborCost, currentTotal, cbInfra, cbLaborCost, cbTotal, savings, savingsPct, currentComplexity, cbComplexity, complexityMid};
+  return {n, laborN, rows, infraTotal, totalLaborCost, currentTotal, cbGeneralInfra, cbVectorInfra, cbInfra, cbLaborCost, cbTotal, savings, savingsPct, currentComplexity, cbComplexity, complexityMid};
 }
 
 /* Retrieval tools in the selection tell us the workload is retrieval-shaped.
@@ -966,12 +990,24 @@ function render(){
       }
       return rowHtml;
     }).join('');
-    html += `<tr><td>Team &amp; integration overhead (${r.n} tool${r.n === 1 ? '' : 's'})</td><td>${fmtUSD(r.totalLaborCost)}/yr</td></tr>`;
+    const laborNote = r.laborN !== r.n
+      ? ` <span style="color:var(--muted); font-weight:400;">(${r.laborN} vendor famil${r.laborN === 1 ? 'y' : 'ies'})</span>`
+      : '';
+    html += `<tr><td>Team &amp; integration overhead (${r.n} tool${r.n === 1 ? '' : 's'})${laborNote}</td><td>${fmtUSD(r.totalLaborCost)}/yr</td></tr>`;
+    if (r.laborN !== r.n) {
+      html += `<tr><td colspan="2"><span class="tco-breakdown-note">MongoDB's two rows share one vendor family for this calculation, since both run on the same Atlas account and don't require the same integration work as two genuinely separate systems &mdash; the same logic already applied to MongoDB's shared support field.</span></td></tr>`;
+    }
     html += `<tr><td><strong>Current stack total</strong></td><td><strong>${fmtUSD(r.currentTotal)}/yr</strong></td></tr>`;
-    html += `<tr><td>Couchbase (Capella Enterprise) &mdash; infra <span style="color:var(--muted); font-weight:400;">(support included)</span></td><td>${fmtUSD(r.cbInfra)}/yr</td></tr>`;
+    if (r.cbGeneralInfra > 0) {
+      html += `<tr><td>Couchbase (Capella Enterprise) &mdash; infra <span style="color:var(--muted); font-weight:400;">(support included)</span></td><td>${fmtUSD(r.cbGeneralInfra)}/yr</td></tr>`;
+    }
+    if (r.cbVectorInfra > 0) {
+      html += `<tr><td>Couchbase (Capella Enterprise) &mdash; Vector Search infra <span style="color:var(--muted); font-weight:400;">(support included)</span></td><td>${fmtUSD(r.cbVectorInfra)}/yr</td></tr>`;
+      html += `<tr><td colspan="2"><span class="tco-breakdown-note">Compared against Couchbase's own vector-specific rate ($${state.cbVectorUnitCost}/ops-sec/yr), confirmed via a real head-to-head benchmark at matched 80% recall &mdash; not the general rate used above. The vector rows themselves are priced at different recall levels from each other and aren't fully comparable yet &mdash; see Methodology.</span></td></tr>`;
+    }
     html += `<tr><td>Couchbase (team &amp; integration)</td><td>${fmtUSD(r.cbLaborCost)}/yr</td></tr>`;
     html += `<tr><td><strong>Couchbase (Capella Enterprise, consolidated) total</strong></td><td><strong>${fmtUSD(r.cbTotal)}/yr</strong></td></tr>`;
-    html += `<tr><td colspan="2"><span class="tco-breakdown-note">Systems today: ${r.n} → after: 1. Reduction = 1 − (1 ÷ ${r.n}) = ${r.complexityMid.toFixed(0)}%, based on duplicate data copies, patch/security surfaces & integration points removed as each system is consolidated. Team &amp; integration overhead follows the same logic in dollar terms: at ${r.n} tool${r.n === 1 ? '' : 's'} selected, ${r.n === 1 ? 'it exactly matches Couchbase’s own overhead — zero assumed labor savings on a 1-for-1 swap.' : 'it grows faster than Couchbase’s single-platform overhead as more systems are kept in sync.'}</span></td></tr>`;
+    html += `<tr><td colspan="2"><span class="tco-breakdown-note">Systems today: ${r.n} → after: 1. Reduction = 1 − (1 ÷ ${r.n}) = ${r.complexityMid.toFixed(0)}%, based on duplicate data copies, patch/security surfaces & integration points removed as each system is consolidated. Team &amp; integration overhead follows the same logic in dollar terms, based on ${r.laborN} distinct vendor famil${r.laborN === 1 ? 'y' : 'ies'}: ${r.laborN === 1 ? 'it exactly matches Couchbase’s own overhead — zero assumed labor savings on a 1-for-1 swap.' : 'it grows faster than Couchbase’s single-platform overhead as more systems are kept in sync.'}</span></td></tr>`;
     bt.innerHTML = html;
   }
 
@@ -1040,7 +1076,7 @@ document.querySelectorAll('#archetypeGrid input[name="archetype"]').forEach(radi
   });
 });
 
-['cbUnitCost','engineerCost'].forEach(id => {
+['cbUnitCost','cbVectorUnitCost','engineerCost'].forEach(id => {
   document.getElementById(id).addEventListener('input', (e) => {
     state[id] = parseFloat(e.target.value) || 0;
     render();
