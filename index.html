@@ -511,7 +511,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <p>Each tool: <code>infrastructure cost = $/ops-sec/yr &times; ops/sec</code>, summed across selections. Team &amp; integration overhead is computed once per stack, not per tool &mdash; see below &mdash; then added to get each side's total. The savings estimate comes from the gap between the stack's overhead and Couchbase's, never a discount off any competitor's price.</p>
 
           <h3>Not every vendor is priced the same way</h3>
-          <p>Some vendors charge per operation, some rent a server by the hour, some publish their own benchmark. We price each by however that vendor actually sells &mdash; never whichever framing looks smaller. For hourly-rented servers: <code>price &divide; assumed sustained throughput</code>. That throughput assumption is ours, not the vendor's, and disclosed in every tooltip that uses it.</p>
+          <p>Some vendors charge per operation, some rent a server by the hour, some publish their own benchmark. We price each by however that vendor actually sells &mdash; never whichever framing looks smaller. For hourly-rented servers: <code>price &divide; assumed sustained throughput</code>. That throughput assumption (typically ~800 sustained ops/sec per vCPU or core) is ours, not the vendor's, and disclosed in every tooltip that uses it. It's a rate, not a workload cap: it's used once to compute a $/ops-sec/yr price, which is then multiplied by whatever traffic level you enter &mdash; changing your traffic doesn't change the underlying rate. The model assumes that rate scales linearly with however many instances it takes to hit your traffic level, with no penalty or bonus for running more of them.</p>
 
           <h3>Watch for a cheaper tier that doesn't apply here</h3>
           <p>Some vendors sell a cheaper dev/test or pay-as-you-go tier for small, bursty traffic &mdash; real, but not what this tool models against the steady, production-scale traffic assumed here.</p>
@@ -529,7 +529,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <p>Every default here traces to a vendor's own public price, published benchmark, or &mdash; for the few rows with none &mdash; a labeled estimate. Two things stay our own disclosed modeling choices: how much traffic a rented server can handle, and which pricing tier matches the steady production workload assumed here.</p>
 
           <h3>Why some vendors show a support badge and others don't</h3>
-          <p><code>adjusted cost = base $/ops-sec/yr &times; (1 + support % &divide; 100)</code>. Premium support is priced differently across vendors. MongoDB, Redis, and Pinecone sell support separately, and none of the three publish a clean percentage &mdash; Step 3 lets you enter your own if you have a quote, defaulted to 0%. Elasticsearch publishes its support-tier percentage directly (Gold +5%, Platinum +10%, Enterprise +15%), so that's applied by default. Couchbase's own price already includes Enterprise-tier support, with no separate charge to add. MongoDB's two rows share one support field, since both run on the same Atlas account and would only be billed once in reality. A similar adjustment isn't offered for databases delivered through a hyperscale cloud platform &mdash; Amazon DynamoDB, Google Firestore, Amazon RDS for PostgreSQL, Amazon ElastiCache for Memcached, and Google AlloyDB. Support for these services is typically sold at the account level, spans dozens of unrelated products, and is shaped by enterprise discount agreements that vary widely by customer. Isolating one database's share of that arrangement would require assumptions too speculative to stand behind, so those rows reflect infrastructure pricing only.</p>
+          <p><code>adjusted cost = base $/ops-sec/yr &times; (1 + support % &divide; 100)</code>. Premium support is priced differently across vendors. MongoDB, Redis, and Pinecone sell support separately, and none of the three publish a clean percentage &mdash; Step 3 lets you enter your own if you have a quote, defaulted to 0%. Elasticsearch publishes its support-tier percentage directly (Gold +5%, Platinum +10%, Enterprise +15%), so that's applied by default. Oracle and SQL Server are a different case again: their support fee is technically optional, but standard practice for production use &mdash; declining it means giving up patches, updates, and support indefinitely, which is why real deployments overwhelmingly renew it every year. That fee (22%/year, ~25%/year respectively) is already folded into their base figures rather than modeled as a separate toggle. Couchbase Capella's own price bundles support the same way, with no separate charge to add. MongoDB's two rows share one support field, since both run on the same Atlas account and would only be billed once in reality. A similar adjustment isn't offered for databases delivered through a hyperscale cloud platform &mdash; Amazon DynamoDB, Google Firestore, Amazon RDS for PostgreSQL, Amazon ElastiCache for Memcached, and Google AlloyDB. Support for these services is typically sold at the account level, spans dozens of unrelated products, and is shaped by enterprise discount agreements that vary widely by customer. Isolating one database's share of that arrangement would require assumptions too speculative to stand behind, so those rows reflect infrastructure pricing only.</p>
 
           <h3 style="margin-top:1.1rem;">Inference savings &mdash; a separate model</h3>
           <p><code>annual savings = annual model spend &times; addressable share &times; cache hit rate</code>, shown as a range. Reported as its own line, never added to the consolidation figure or its denominator &mdash; deliberately, since inference costs vary.</p>
@@ -647,6 +647,9 @@ function renderSupportPill(c) {
   }
   if (c.id === 'elasticsearch') {
     return ` <span class="tco-badge" style="background:#fff7e5; color:var(--amber);">+15% support (published)</span>`;
+  }
+  if (['oracle','sqlserver'].includes(c.id)) {
+    return ` <span class="tco-badge" style="background:#ecfdf3; color:var(--green);">license + support</span>`;
   }
   return '';
 }
@@ -956,6 +959,10 @@ function render(){
         rowHtml += `<tr><td colspan="2"><span class="tco-breakdown-note">Includes a ${pct}% support-plan adjustment entered in Step 3.</span></td></tr>`;
       } else if (['mongodb','mongovector','redis','pinecone'].includes(row.id)) {
         rowHtml += `<tr><td colspan="2"><span class="tco-breakdown-note">Does not include a premium support plan by default &mdash; add one as a % of spend in Step 3 if applicable.</span></td></tr>`;
+      } else if (row.id === 'oracle') {
+        rowHtml += `<tr><td colspan="2"><span class="tco-breakdown-note">Includes Oracle's 22%/year support fee. Technically optional, but standard practice for production use &mdash; declining it means giving up patches, updates, and support indefinitely.</span></td></tr>`;
+      } else if (row.id === 'sqlserver') {
+        rowHtml += `<tr><td colspan="2"><span class="tco-breakdown-note">Includes Microsoft's ~25%/year Software Assurance fee. Technically optional, but standard practice for production use &mdash; it's what provides ongoing upgrade rights and support.</span></td></tr>`;
       }
       return rowHtml;
     }).join('');
