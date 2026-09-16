@@ -381,8 +381,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
 
     <div class="panel" style="margin: 1.5rem clamp(1rem, 4vw, 4rem) 0; padding: clamp(1rem, 2.2vw, 1.6rem); max-width: 52rem;">
       <h2 style="font-size:1.1rem;">How this calculator works</h2>
-      <p class="subhead" style="font-size:0.95rem; margin-bottom:0.8rem;">This tool estimates the costs to run multiple separate databases, caches, and search engines side by side, versus consolidating them onto one Couchbase Capella platform. Select the tools you use today, enter your traffic level, and see infrastructure and team-overhead costs compared directly, with every assumption shown.</p>
-      <p class="subhead" style="font-size:0.95rem;">Nearly every vendor default in this calculator is sourced to that vendor's own public pricing page or a benchmark &mdash; not an internal guess at what a competitor should cost. (The exception is Ditto, which doesn't disclose public pricing.) Premium support is also priced differently across vendors. See "Methodology &amp; validation notes" below for exactly how &mdash; including the formulas behind every number on this page.</p>
+      <p class="subhead" style="font-size:0.95rem;">This tool estimates the costs to run multiple separate databases, caches, and search engines side by side versus consolidating them onto one Couchbase Capella platform. It assumes continuous operation over one year. Select the tools you use today, enter your workload details, and see infrastructure and team overhead costs compared directly. For more background, see the FAQ and Methodology sections further below.</p>
     </div>
   </div>
 
@@ -475,7 +474,7 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <h3 style="margin:1.2rem 0 0.4rem;">Engineering assumptions</h3>
           <div class="input-stack">
             <div class="field">
-              <div><label>Fully-loaded engineer cost</label><p>$ per engineer, per year. Team and integration overhead scales automatically with how many tools you select and your traffic level &mdash; this field sets the salary used in that calculation. See "Why team overhead scales with consolidation" in Methodology &amp; validation notes for the formula.</p></div>
+              <div><label>Fully-loaded engineer cost</label><p>$ per engineer, per year. Team and integration overhead scales automatically with how many tools you select and your workload &mdash; this field sets the salary used in that calculation. See "Why team overhead scales with consolidation" in Methodology &amp; validation notes for the formula.</p></div>
               <input type="number" id="engineerCost" value="165000" step="1000">
             </div>
           </div>
@@ -511,6 +510,26 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
             <summary>What is database consolidation?</summary>
             <p>Database consolidation replaces multiple databases with one multi-model platform, reducing infrastructure cost, engineering overhead, and the complexity of keeping multiple systems in sync.</p>
           </details>
+          <details class="faq-item">
+            <summary>Why not use a cheaper dev/test tier?</summary>
+            <p>Some vendors sell cheaper dev/test tiers for bursty traffic, real, but not what this tool models against the steady, production-scale traffic assumed here.</p>
+          </details>
+          <details class="faq-item">
+            <summary>How is Complexity Reduction calculated?</summary>
+            <p>1 minus (1 divided by tools selected). One tool = 0%, more tools raise it (2 to 50%, 3 to 67%, 5 to 80%). Directional, the qualitative case, not a formal risk score.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Why are savings shown as a range?</summary>
+            <p>Even a precise price gets multiplied by a workload with real-world spikes a single number can't capture. Unlock Step 3 with your own contracts for a tighter estimate.</p>
+          </details>
+          <details class="faq-item">
+            <summary>What does $/ops-sec/yr mean?</summary>
+            <p>The cost to sustain one operation per second continuously for a year (31.5M ops), letting every vendor's pricing model be compared on one scale. Some price reads/writes differently, see each tooltip.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Do vector and token costs double-count?</summary>
+            <p>No. Deselecting a vector tool already removes its cost from the stack total. The token savings card is model-provider spend only, the two never overlap.</p>
+          </details>
         </div>
       </div>
 
@@ -523,17 +542,8 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <h3>Not every vendor is priced the same way</h3>
           <p>Some vendors charge per operation, some rent a server by the hour, some publish their own benchmark. We price each by however that vendor actually sells &mdash; never whichever framing looks smaller. For hourly-rented servers: <code>price &divide; assumed sustained throughput</code>. That throughput assumption (typically ~800 sustained ops/sec per vCPU or core) is ours, not the vendor's, and disclosed in every tooltip that uses it. It's a rate, not a workload cap: it's used once to compute a $/ops-sec/yr price, which is then multiplied by whatever traffic level you enter &mdash; changing your traffic doesn't change the underlying rate. The model assumes that rate scales linearly with however many instances it takes to hit your traffic level, with no penalty or bonus for running more of them.</p>
 
-          <h3>Why we exclude developer and pay-as-you-go tiers</h3>
-          <p>Some vendors sell a cheaper dev/test or pay-as-you-go tier for small, bursty traffic &mdash; real, but not what this tool models against the steady, production-scale traffic assumed here.</p>
-
-          <h3>Complexity reduction</h3>
-          <p><code>Reduction = 1 &minus; (1 &divide; N systems selected)</code>. One tool = a straight swap, correctly 0%; more consolidated tools raise it (2&rarr;50%, 3&rarr;67%, 5&rarr;80%). Directional &mdash; makes the qualitative case (less duplication, smaller footprint, fewer integration points), not a formal risk score.</p>
-
           <h3>Why team overhead scales with how much you consolidate</h3>
           <p><code>Team &amp; integration overhead = [0.35 &times; (tools selected)<sup>0.7</sup> + 0.25 &times; ((tools selected)<sup>1.5</sup> &minus; 1)] &times; (your traffic &divide; 5,000)<sup>0.2</sup> &times; engineer cost</code>. Couchbase's overhead uses the same formula simplified to <code>0.35 &times; (your traffic &divide; 5,000)<sup>0.2</sup> &times; engineer cost</code> &mdash; always treated as a single platform, no matter how many tools it replaces. Engineer cost defaults to $165,000/year (fully loaded) and is editable in Step 3; it applies identically to both sides of the comparison. One more database doesn't need a whole extra admin &mdash; teams share tooling across systems they already run &mdash; so the admin portion grows slower than 1-for-1 as you add tools.</p>
-
-          <h3>Why estimates are shown as ranges</h3>
-          <p><code>low estimate = value &times; 0.85</code>, <code>high estimate = value &times; 1.15</code> (roughly <code>&plusmn;12&ndash;15%</code>), applied because even a precise price gets multiplied by a modeled workload with real-world spikes a single figure can't capture. Unlock Step 3 to tighten it with your own contracts and traffic.</p>
 
           <h3>How we apply premium support costs</h3>
           <p><code>adjusted cost = base $/ops-sec/yr &times; (1 + support % &divide; 100)</code>. Premium support is priced differently across vendors. MongoDB, Redis, and Pinecone sell support separately, and none of the three publish a clean percentage &mdash; Step 3 lets you enter your own if you have a quote, defaulted to 0%. Elasticsearch publishes its support-tier percentage directly (Gold +5%, Platinum +10%, Enterprise +15%), so that's applied by default. Oracle and SQL Server are a different case again: their support fee is technically optional, but standard practice for production use &mdash; declining it means giving up patches, updates, and support indefinitely, which is why real deployments overwhelmingly renew it every year. That fee (22%/year, ~25%/year respectively) is already folded into their base figures rather than modeled as a separate toggle. Couchbase Capella's own price bundles support the same way, with no separate charge to add. MongoDB's two rows share one support field, since both run on the same Atlas account and would only be billed once in reality. A similar adjustment isn't offered for databases delivered through a hyperscale cloud platform &mdash; Amazon DynamoDB, Google Firestore, Amazon RDS for PostgreSQL, Amazon ElastiCache for Memcached, and Google AlloyDB. Support for these services is typically sold at the account level, spans dozens of unrelated products, and is shaped by enterprise discount agreements that vary widely by customer. Isolating one database's share of that arrangement would require assumptions too speculative to stand behind, so those rows reflect infrastructure pricing only.</p>
@@ -544,11 +554,6 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
           <h3>How we estimate LLM token savings</h3>
           <p><code>annual savings = annual model spend &times; addressable share &times; cache hit rate</code>, shown as a range. Reported as its own line, never added to the consolidation figure or its denominator &mdash; deliberately, since inference costs vary.</p>
 
-          <h3>Why residual token spend remains</h3>
-          <p><code>residual spend = annual token budget &minus; savings</code>. Cache misses still bill the provider, so spend never reaches zero (see the residual line in the breakdown table).</p>
-
-          <h3>Vector infrastructure vs. LLM token costs</h3>
-          <p>Deselecting a vector database already removes its cost from the stack total above &mdash; the inference card is model-provider spend only; the two don't overlap. Know which line a saving belongs to before it goes into a business case.</p>
         </div>
       </details>
 
@@ -622,7 +627,7 @@ const COMPETITORS = [
   {id:'oracle',     name:'Oracle',      trademarkSymbol:'®', cat:'SQL',    unitCost:30, blurb:'Enterprise RDBMS — list pricing plus support.', source:'$47.5K/processor list + 22%/yr support, amortized, ÷ an assumed sustained-throughput-per-processor. Source: <a href="https://www.oracle.com/a/ocom/docs/corporate/pricing/technology-price-list-070617.pdf" target="_blank" rel="noopener">Oracle price list</a>'},
   {id:'sqlserver',  name:'SQL Server',  trademarkSymbol:'®', cat:'SQL',    unitCost:4.25, blurb:'Microsoft RDBMS — Enterprise Edition list pricing.', source:'SQL Server 2022 Enterprise, perpetual license, $7,561.50/core + ~25%/yr Software Assurance, amortized over 5 years, assuming ~800 sustained ops/sec per core. Priced for 2022 (2025 edition pricing not yet public). <a href="https://www.microsoft.com/en-us/sql-server/sql-server-2022-pricing" target="_blank" rel="noopener">microsoft.com/sql-server/pricing</a>'},
   {id:'postgres',   name:'PostgreSQL',  trademarkSymbol:'®', cat:'SQL',    unitCost:0.96, blurb:'Open-source RDBMS; cost reflects managed hosting, not license.', source:'AWS RDS for PostgreSQL, db.m6g.large On-Demand, assuming ~1,600 sustained ops/sec for this instance size. <a href="https://aws.amazon.com/rds/postgresql/pricing/" target="_blank" rel="noopener">aws.amazon.com/rds/postgresql/pricing</a>'},
-  {id:'mongovector',name:'MongoDB (Vector, Scalar Quantization)', trademarkSymbol:'®', cat:'Vector Search', unitCost:78, blurb:'Vector search add-on on MongoDB Atlas.', source:'Based on MongoDB’s published benchmark on <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">S50 Storage-Optimized Search Nodes on AWS</a> at ~98% recall. Because MongoDB doesn\'t publish lower-recall pricing for scalar quantization, this reflects their most expensive setup. However, independent head-to-head testing at a matched 80% recall proves MongoDB requires roughly 5x the compute infrastructure to match Couchbase\'s native vector throughput. (Binary quantization runs roughly 1/4 the cost but sacrifices accuracy). Premium support is excluded &mdash; add your Atlas support % in Step 3. Sources: <a href="https://www.couchbase.com/content/capella/comparing-vector-search-capabilities-of-mongodb-and-couchbase-by-benchmarking-using-vectordbbench" target="_blank" rel="noopener">Couchbase VectorDBBench Whitepaper</a> &middot; <a href="https://www.mongodb.com/docs/vector-search/benchmark/overview/" target="_blank" rel="noopener">MongoDB benchmark</a>.'},
+  {id:'mongovector',name:'MongoDB (Vector, Scalar Quantization)', trademarkSymbol:'®', cat:'Vector Search', unitCost:78, blurb:'Vector search add-on on MongoDB Atlas.', source:'Based on MongoDB’s published benchmark on <a href="https://www.mongodb.com/pricing" target="_blank" rel="noopener">S50 Storage-Optimized Search Nodes on AWS</a> at ~98% recall. Because MongoDB doesn\'t publish lower-recall pricing for scalar quantization, this reflects their most expensive setup. Couchbase’s own head-to-head testing at a matched 80% recall found MongoDB needing roughly 5x the compute to match Couchbase’s vector throughput &mdash; a Couchbase-run comparison, not an independent benchmark. (Binary quantization runs roughly 1/4 the cost but sacrifices accuracy). Premium support is excluded &mdash; add your Atlas support % in Step 3. MongoDB’s own benchmark: <a href="https://www.mongodb.com/docs/vector-search/benchmark/overview/" target="_blank" rel="noopener">mongodb.com/docs/vector-search/benchmark</a>. Couchbase’s own comparison methodology: <a href="https://www.couchbase.com/content/capella/comparing-vector-search-capabilities-of-mongodb-and-couchbase-by-benchmarking-using-vectordbbench" target="_blank" rel="noopener">VectorDBBench Whitepaper</a>.'},
   {id:'alloydb',    name:'AlloyDB',     trademarkSymbol:'™', cat:'Vector Search', unitCost:13.43, blurb:'Google Cloud’s Postgres-compatible database with vector support.', source:'Head-to-head Couchbase-vs-AlloyDB vector search benchmark on matched hardware (100M vectors, SIFT and LAION datasets), using AlloyDB’s ScaNN index on a production-grade 2-node cluster (primary + HA replica, 32 cores and 256GB RAM per node), at 80% recall (AlloyDB’s best-performing, highest-QPS configuration, S.IDX.2-256k: $11.77/hr &times; 8,760 hrs/yr &divide; 7,676 QPS = $13.43/ops-sec/yr, shown rounded to $13 above). Underlying compute cost independently verified against Google’s public pricing (<a href="https://cloud.google.com/alloydb/pricing" target="_blank" rel="noopener">cloud.google.com/alloydb/pricing</a>). The same benchmark, run on Couchbase at the identical 80% recall level, produced the vector-specific Couchbase rate used for comparison here (see Step 3) &mdash; nearly identical once compared at matched recall; see Methodology.'},
   {id:'pinecone',   name:'Pinecone',    trademarkSymbol:null, cat:'Vector Search', unitCost:150.36, blurb:'Serverless vector database, billed on read/write units + storage.', source:'Dedicated Read Nodes (Pinecone’s tier for sustained, high-QPS workloads): T1 node, $969/month (AWS us-east-1, Standard), confirmed directly via Pinecone’s own cost estimator at 14M vectors and 232 QPS — 3 nodes recommended at this scale, $2,907/month query cost &times; 12 &divide; 232 QPS = $150.36/ops-sec/yr, shown rounded to $150 above. Pinecone does not publish a recall/accuracy percentage for this configuration, so this figure can’t be recall-matched to the other vector rows here — see Methodology. Pro-level support (24/7, SEV-1 in 2hrs) is bundled at this tier. Pinecone’s fastest-response Premium tier (SEV-1 in 30 mins) requires an Enterprise annual commitment with no published price — not included by default; add your own % of spend in Step 3 if you have a quote. <a href="https://www.pinecone.io/pricing/estimate/" target="_blank" rel="noopener">pinecone.io/pricing/estimate</a>'},
   {id:'elasticsearch', name:'Elasticsearch', trademarkSymbol:'®', cat:'Full-Text Search', unitCost:1.84, blurb:'Distributed full-text search & analytics engine.', source:'Based on Elastic Cloud Serverless, which Elastic is positioning as their new flagship production tier. <br><br><strong>The Math:</strong> $0.09/VCU-hr (search) + $0.14/VCU-hr (ingest), blended at a typical 70/30 search-heavy ratio = <strong>$1.84/ops-sec/yr</strong>. This is divided by an assumed ~500 sustained ops/sec per VCU (our own conservative sizing assumption, as Elastic doesn’t publish a throughput rating). <br><br>Elastic’s publicly listed Enterprise support tier (+15% of charge) is applied by default in Step 3 — adjust there if you’re on Gold (+5%) or Platinum (+10%) instead. <a href="https://www.elastic.co/pricing/serverless-search" target="_blank" rel="noopener">elastic.co/pricing</a>'}
@@ -1053,7 +1058,9 @@ document.getElementById('toggleBreakdown').addEventListener('click', () => {
 });
 
 document.getElementById('llmSpendMonthly').addEventListener('input', (e) => {
-  state.llmSpendMonthly = Math.min(1000000, Math.max(0, parseFloat(e.target.value) || 0));
+  const clamped = Math.min(1000000, Math.max(0, parseFloat(e.target.value) || 0));
+  state.llmSpendMonthly = clamped;
+  if (parseFloat(e.target.value) !== clamped) { e.target.value = clamped; }
   render();
 });
 
