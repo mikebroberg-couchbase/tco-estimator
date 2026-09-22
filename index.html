@@ -358,6 +358,42 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
 }
 .methodology-body h3:first-child { margin-top: 0; }
 .methodology-body p { margin: 0; }
+
+/* ===== Lead capture: CTA checkboxes + modal ===== */
+.tco-cta-check { display: flex; align-items: center; gap: 0.5rem; color: #fff; font-weight: 600; font-size: 0.9rem; margin-top: 0.55rem; cursor: pointer; }
+.tco-cta-check input { accent-color: var(--cb-red); width: 1.05rem; height: 1.05rem; }
+
+.tco-modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(17, 19, 24, 0.55);
+  display: none; align-items: center; justify-content: center; padding: 1rem;
+}
+.tco-modal-overlay.tco-modal-open { display: flex; }
+.tco-modal {
+  position: relative;
+  width: 100%; max-width: 30rem; max-height: 90vh; overflow-y: auto;
+  background: var(--cream); border-radius: 1.2rem; box-shadow: var(--shadow);
+  padding: 1.5rem;
+}
+.tco-modal-close {
+  position: absolute; top: 0.8rem; right: 0.8rem;
+  background: transparent; color: var(--muted); border: 0;
+  font-size: 1.3rem; line-height: 1; padding: 0.3rem 0.55rem; font-weight: 700;
+}
+.tco-modal-close:hover { background: rgba(17,19,24,0.06); color: var(--ink); }
+.tco-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-top: 1rem; }
+.tco-modal-grid .full { grid-column: 1 / -1; }
+.tco-field-label { display: block; font-size: 0.82rem; font-weight: 750; margin-bottom: 0.3rem; }
+.tco-modal input, .tco-modal select {
+  width: 100%; border: 1px solid var(--line); border-radius: 0.65rem;
+  padding: 0.6rem 0.7rem; background: #fff;
+}
+.tco-modal input.tco-input-error, .tco-modal select.tco-input-error { border-color: var(--cb-red); }
+.tco-field-error { display: none; color: var(--cb-red-dark); font-size: 0.76rem; margin-top: 0.3rem; font-weight: 650; }
+.tco-field-error.show { display: block; }
+.tco-modal-note { margin-top: 0.9rem; color: var(--muted); font-size: 0.76rem; }
+.tco-modal-success { display: none; text-align: center; padding: 0.5rem 0 0.25rem; }
+.tco-modal-success.show { display: block; }
 </style>
 </head>
 <body>
@@ -481,9 +517,75 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
         </div>
       </details>
 
-      <div class="hero-card" id="demoCTA" style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
-        <p style="max-width:26rem; margin:0;"><strong style="color:#fff;">Want to run these numbers against your specific configurations?</strong><br>A Couchbase architect will size caching, memory, and retrieval against your workload in a 30-minute session.</p>
-        <a href="https://www.couchbase.com/get-a-demo/" target="_blank" rel="noopener"><button type="button" class="tco-invert-btn">Book a Meeting</button></a>
+      <div class="tco-modal-overlay" id="leadModalOverlay">
+        <div class="tco-modal">
+          <button type="button" class="tco-modal-close" id="leadModalClose" aria-label="Close">&times;</button>
+          <div id="leadModalForm">
+            <h2 style="font-size:1.1rem;">Tell us where to send this</h2>
+            <p class="subhead" style="font-size:0.85rem;">We'll use this to follow up on your estimate &mdash; no spam, no shared lists.</p>
+            <div class="tco-modal-grid">
+              <div>
+                <label class="tco-field-label" for="leadFirstName">First Name *</label>
+                <input type="text" id="leadFirstName" autocomplete="given-name">
+              </div>
+              <div>
+                <label class="tco-field-label" for="leadLastName">Last Name *</label>
+                <input type="text" id="leadLastName" autocomplete="family-name">
+              </div>
+              <div class="full">
+                <label class="tco-field-label" for="leadEmail">Email *</label>
+                <input type="email" id="leadEmail" autocomplete="email">
+                <div class="tco-field-error" id="leadEmailError">Please enter a valid email address.</div>
+              </div>
+              <div>
+                <label class="tco-field-label" for="leadPhone">Phone *</label>
+                <input type="tel" id="leadPhone" autocomplete="tel">
+                <div class="tco-field-error" id="leadPhoneError">Please enter a valid phone number.</div>
+              </div>
+              <div>
+                <label class="tco-field-label" for="leadCompany">Company *</label>
+                <input type="text" id="leadCompany" autocomplete="organization">
+              </div>
+              <div class="full">
+                <label class="tco-field-label" for="leadJobTitle">Job Title *</label>
+                <select id="leadJobTitle">
+                  <option value="">Select Job Title...</option>
+                  <option>Engineering / IT</option>
+                  <option>Architecture</option>
+                  <option>Product Management</option>
+                  <option>Executive / C-Level</option>
+                  <option>Procurement</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="full">
+                <label class="tco-field-label" for="leadCountry">Country *</label>
+                <select id="leadCountry">
+                  <option value="">Select Country...</option>
+                  <option>United States</option>
+                  <option>Canada</option>
+                  <option>United Kingdom</option>
+                  <option>Germany</option>
+                  <option>France</option>
+                  <option>India</option>
+                  <option>Australia</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+            <p class="tco-modal-note">All fields with an asterisk (*) must be filled out.</p>
+            <div class="button-row" style="margin-top:1rem;">
+              <button type="button" id="leadModalSubmit" style="width:100%;">Submit</button>
+            </div>
+          </div>
+          <div class="tco-modal-success" id="leadModalSuccess">
+            <h2 style="font-size:1.1rem;">Thanks &mdash; opening your submission in a new tab&hellip;</h2>
+            <p class="subhead" style="font-size:0.85rem;">A snapshot of your estimate and contact info opened in a new tab. If it didn't open automatically, your browser may have blocked the pop-up &mdash; allow pop-ups for this site and submit again.</p>
+            <div class="button-row" style="margin-top:1rem; justify-content:center;">
+              <button type="button" id="leadModalDone">Close</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="faq-section">
@@ -597,6 +699,15 @@ footer { padding: 0 4rem 2rem; color: var(--muted); text-align: center; }
         <button type="button" id="toggleBreakdown" class="tco-ghost-btn" style="margin-top:1rem;">How we calculate this &#9662;</button>
         <div class="summary-box" id="breakdownBox" style="display:none;">
           <table class="tco-breakdown-table" id="breakdownTable"></table>
+        </div>
+      </div>
+
+      <div class="hero-card" id="demoCTA" style="margin-top:1rem;">
+        <p style="margin:0;"><strong style="color:#fff;">Want to run these numbers against your specific configurations?</strong><br>A Couchbase architect will size caching, memory, and retrieval against your workload in a 30-minute session.</p>
+        <label class="tco-cta-check"><input type="checkbox" id="ctaBookMeeting" checked> Book a meeting</label>
+        <label class="tco-cta-check"><input type="checkbox" id="ctaSaveEstimate"> Save an estimate</label>
+        <div class="button-row" style="margin:1rem 0 0;">
+          <button type="button" class="tco-invert-btn" id="ctaSubmitBtn">Submit</button>
         </div>
       </div>
     </aside>
@@ -1101,6 +1212,144 @@ document.querySelectorAll('#advancedFields .tco-tip').forEach(tip => {
     document.querySelectorAll('.tco-tip-show').forEach(t => t.classList.remove('tco-tip-show'));
     if(!wasOpen) tip.classList.add('tco-tip-show');
   });
+});
+
+/* ===== Lead capture: "Want to run these numbers..." CTA + modal =====
+   No backend yet (this is a static GitHub Pages site) -- on submit we build a
+   JSON snapshot of every Step 1/2/3 input plus the displayed summary numbers,
+   and open it in a new browser tab so the visitor (or whoever they hand the
+   tab to) can read, copy, or print it. Swap showLeadSubmission() for a real
+   POST once this is wired to Marketo. */
+const LEAD_RECIPIENTS = ['mike.broberg@couchbase.com', 'melissa.gutierrez@couchbase.com', 'michael.dobos@couchbase.com'];
+
+function buildStateSnapshot(){
+  const r = compute();
+  const inf = computeInference();
+  return {
+    timestamp: new Date().toISOString(),
+    step1_selectedTools: COMPETITORS.filter(c => state.selected.has(c.id)).map(c => ({id: c.id, name: c.name, category: c.cat})),
+    step2_workload: {
+      opsPerSecond: state.ops,
+      monthlyTokenBudgetUSD: state.llmSpendMonthly,
+      aiWorkloadArchetype: state.archetype,
+    },
+    step3_advancedSettings: {
+      unlockedOrDefault: 'Step 3 has no gate in this tool -- values below reflect current inputs whether or not the accordion was opened',
+      costOverridesByTool: state.overrides,
+      supportPctByVendor: state.supportPct,
+      couchbaseUnitCost: state.cbUnitCost,
+      couchbaseVectorUnitCost: state.cbVectorUnitCost,
+      fullyLoadedEngineerCost: state.engineerCost,
+    },
+    directionalAnnualImpactSummary: {
+      estimatedAnnualSavings: document.getElementById('savingsValue').textContent.trim(),
+      savingsPctNote: document.getElementById('savingsPct').textContent.trim(),
+      complexityReduction: document.getElementById('complexityValue').textContent.trim(),
+      toolsSelected: document.getElementById('toolsCount').textContent.trim(),
+      tokenSavings: document.getElementById('inferenceValue').textContent.trim(),
+      tokenSavingsNote: document.getElementById('inferenceSub').textContent.trim(),
+      rawSavingsUSD: r.n > 0 ? {low: r.savings * 0.85, high: r.savings * 1.15} : null,
+      rawTokenSavingsUSD: inf.active ? {low: inf.savedLow, high: inf.savedHigh} : null,
+    },
+  };
+}
+
+function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+function isValidPhone(v){ const digits = v.replace(/[^0-9]/g, ''); return digits.length >= 7 && digits.length <= 15; }
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function showLeadSubmission(payload, contact){
+  const requested = [contact.wantsBooking ? 'Book a meeting' : null, contact.wantsSave ? 'Save an estimate' : null].filter(Boolean).join(' + ') || 'Not specified';
+  const title = `TCO Estimator submission — ${contact.company || (contact.firstName + ' ' + contact.lastName)}`;
+  const win = window.open('', '_blank');
+  if (!win) return; // pop-up blocked; the modal's success text tells the visitor what to do
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
+<style>body{font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;max-width:48rem;margin:2rem auto;padding:0 1rem;color:#111318;}
+pre{background:#101116;color:#f4f6f8;padding:1rem;border-radius:0.5rem;overflow:auto;font-size:0.82rem;}
+dl{display:grid;grid-template-columns:8rem 1fr;gap:0.35rem 1rem;}dt{font-weight:700;}dd{margin:0;}
+h1{font-size:1.3rem;}h2{font-size:1rem;margin-top:2rem;}</style></head>
+<body>
+<h1>${escapeHtml(title)}</h1>
+<dl>
+  <dt>Name</dt><dd>${escapeHtml(contact.firstName)} ${escapeHtml(contact.lastName)}</dd>
+  <dt>Email</dt><dd>${escapeHtml(contact.email)}</dd>
+  <dt>Phone</dt><dd>${escapeHtml(contact.phone)}</dd>
+  <dt>Company</dt><dd>${escapeHtml(contact.company)}</dd>
+  <dt>Job Title</dt><dd>${escapeHtml(contact.jobTitle)}</dd>
+  <dt>Country</dt><dd>${escapeHtml(contact.country)}</dd>
+  <dt>Requested</dt><dd>${escapeHtml(requested)}</dd>
+  <dt>Route to</dt><dd>${escapeHtml(LEAD_RECIPIENTS.join(', '))}</dd>
+</dl>
+<h2>JSON payload (Step 1/2/3 inputs + Directional Annual Impact Summary)</h2>
+<pre>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
+</body></html>`;
+  win.document.write(html);
+  win.document.close();
+}
+
+const leadModalOverlay = document.getElementById('leadModalOverlay');
+const leadModalForm = document.getElementById('leadModalForm');
+const leadModalSuccess = document.getElementById('leadModalSuccess');
+
+function openLeadModal(){
+  leadModalForm.style.display = '';
+  leadModalSuccess.classList.remove('show');
+  leadModalOverlay.classList.add('tco-modal-open');
+}
+function closeLeadModal(){
+  leadModalOverlay.classList.remove('tco-modal-open');
+}
+
+document.getElementById('ctaSubmitBtn').addEventListener('click', openLeadModal);
+document.getElementById('leadModalClose').addEventListener('click', closeLeadModal);
+document.getElementById('leadModalDone').addEventListener('click', closeLeadModal);
+leadModalOverlay.addEventListener('click', (e) => { if(e.target === leadModalOverlay) closeLeadModal(); });
+document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && leadModalOverlay.classList.contains('tco-modal-open')) closeLeadModal(); });
+
+document.getElementById('leadModalSubmit').addEventListener('click', () => {
+  const fieldIds = ['leadFirstName', 'leadLastName', 'leadEmail', 'leadPhone', 'leadCompany', 'leadJobTitle', 'leadCountry'];
+  const fields = Object.fromEntries(fieldIds.map(id => [id, document.getElementById(id)]));
+  let valid = true;
+
+  Object.values(fields).forEach(el => el.classList.remove('tco-input-error'));
+  document.getElementById('leadEmailError').classList.remove('show');
+  document.getElementById('leadPhoneError').classList.remove('show');
+
+  fieldIds.forEach(id => {
+    if(!fields[id].value.trim()){ fields[id].classList.add('tco-input-error'); valid = false; }
+  });
+  if(fields.leadEmail.value.trim() && !isValidEmail(fields.leadEmail.value)){
+    fields.leadEmail.classList.add('tco-input-error');
+    document.getElementById('leadEmailError').classList.add('show');
+    valid = false;
+  }
+  if(fields.leadPhone.value.trim() && !isValidPhone(fields.leadPhone.value)){
+    fields.leadPhone.classList.add('tco-input-error');
+    document.getElementById('leadPhoneError').classList.add('show');
+    valid = false;
+  }
+  if(!valid) return;
+
+  const contact = {
+    firstName: fields.leadFirstName.value.trim(),
+    lastName: fields.leadLastName.value.trim(),
+    email: fields.leadEmail.value.trim(),
+    phone: fields.leadPhone.value.trim(),
+    company: fields.leadCompany.value.trim(),
+    jobTitle: fields.leadJobTitle.value,
+    country: fields.leadCountry.value,
+    wantsBooking: document.getElementById('ctaBookMeeting').checked,
+    wantsSave: document.getElementById('ctaSaveEstimate').checked,
+  };
+  const payload = { contact, ...buildStateSnapshot() };
+  showLeadSubmission(payload, contact);
+
+  leadModalForm.style.display = 'none';
+  leadModalSuccess.classList.add('show');
 });
 </script>
 </body>
