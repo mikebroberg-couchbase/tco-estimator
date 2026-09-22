@@ -1219,8 +1219,8 @@ document.querySelectorAll('#advancedFields .tco-tip').forEach(tip => {
    JSON snapshot of every Step 1/2/3 input plus the displayed summary numbers,
    and open it in a new browser tab so the visitor (or whoever they hand the
    tab to) can read, copy, or print it. Swap showLeadSubmission() for a real
-   POST once this is wired to Marketo. */
-const LEAD_RECIPIENTS = ['mike.broberg@couchbase.com', 'melissa.gutierrez@couchbase.com', 'michael.dobos@couchbase.com'];
+   POST once this is wired to Marketo -- at that point route submissions to
+   mike.broberg@couchbase.com, melissa.gutierrez@couchbase.com, michael.dobos@couchbase.com. */
 
 function buildStateSnapshot(){
   const r = compute();
@@ -1282,7 +1282,6 @@ h1{font-size:1.3rem;}h2{font-size:1rem;margin-top:2rem;}</style></head>
   <dt>Job Title</dt><dd>${escapeHtml(contact.jobTitle)}</dd>
   <dt>Country</dt><dd>${escapeHtml(contact.country)}</dd>
   <dt>Requested</dt><dd>${escapeHtml(requested)}</dd>
-  <dt>Route to</dt><dd>${escapeHtml(LEAD_RECIPIENTS.join(', '))}</dd>
 </dl>
 <h2>JSON payload (Step 1/2/3 inputs + Directional Annual Impact Summary)</h2>
 <pre>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
